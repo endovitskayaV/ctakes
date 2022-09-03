@@ -5,6 +5,7 @@ cli LookupXml=l
 // umls credentials
 cli umlsUser=user
 cli umlsPass=pass
+cli umlsKey=key
 
 // Default fast dictionary lookup
 add concurrent.ThreadSafeFastLookup

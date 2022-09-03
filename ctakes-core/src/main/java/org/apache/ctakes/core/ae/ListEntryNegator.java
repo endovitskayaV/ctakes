@@ -16,6 +16,7 @@ import org.apache.uima.jcas.JCas;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,7 +41,7 @@ public class ListEntryNegator extends JCasAnnotator_ImplBase {
 
    static private final Pattern NEGATIVE_PATTERN
          = Pattern
-         .compile( "(?:\\s?:\\s*)(?:NEGATIVE|(?:NO\\.?\\b)|NONE|(?:NOT (?:SEEN|PRESENT|INDICATED|FOUND|DISCOVERED)?)|DENIE(?:S|D))",
+         .compile( "(?:\\s?:\\s*)(?:NEGATIVE|(?:NO\\.?\\b)|(?:N\\/A)|NONE|(?:NOT (?:APPLICABLE|INVOLVED|SEEN|PRESENT|INDICATED|FOUND|DISCOVERED)?)|DENIE[SD])",
                Pattern.CASE_INSENSITIVE );
 
    /**
@@ -52,7 +53,6 @@ public class ListEntryNegator extends JCasAnnotator_ImplBase {
       LOGGER.info( "Adjusting attributes within Lists ..." );
       final Collection<List> lists = JCasUtil.select( jcas, List.class );
       lists.forEach( l -> processList( jcas, l ) );
-      LOGGER.info( "Finished Processing" );
    }
 
    static private void processList( final JCas jCas, final AnnotationFS list ) {
@@ -61,11 +61,11 @@ public class ListEntryNegator extends JCasAnnotator_ImplBase {
       if ( listEntries.isEmpty() ) {
          return;
       }
-      listEntries.sort( ( a1, a2 ) -> a1.getBegin() - a2.getBegin() );
+      listEntries.sort( Comparator.comparingInt( AnnotationFS::getBegin ) );
       final java.util.List<IdentifiedAnnotation> negatables = new ArrayList<>();
       negatables.addAll( JCasUtil.selectCovered( jCas, DiseaseDisorderMention.class, list ) );
       negatables.addAll( JCasUtil.selectCovered( jCas, SignSymptomMention.class, list ) );
-      negatables.sort( ( a1, a2 ) -> a1.getBegin() - a2.getBegin() );
+      negatables.sort( Comparator.comparingInt( AnnotationFS::getBegin ) );
       if ( negatables.isEmpty() ) {
          return;
       }

@@ -81,11 +81,11 @@ public class NumberedSuffixComparator implements Comparator<String> {
     */
    static private int compareNumText( final String numText1, final String numText2 ) {
       try {
-         final int num1 = Integer.parseUnsignedInt( numText1 );
-         final int num2 = Integer.parseUnsignedInt( numText2 );
-         return Integer.compare( num1, num2 );
+         final long num1 = Long.parseUnsignedLong( numText1 );
+         final long num2 = Long.parseUnsignedLong( numText2 );
+         return Long.compare( num1, num2 );
       } catch ( NumberFormatException nfE ) {
-         LOGGER.error( nfE.getMessage(), nfE );
+         LOGGER.debug( nfE.getMessage(), nfE );
       }
       return 0;
    }

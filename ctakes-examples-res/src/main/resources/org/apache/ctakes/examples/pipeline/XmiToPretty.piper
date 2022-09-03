@@ -11,4 +11,4 @@ add pretty.plaintext.PrettyTextWriterFit
 add property.plaintext.PropertyTextWriterFit
 
 // Announce completion
-addLast util.FinishedLogger
+addLast util.log.FinishedLogger

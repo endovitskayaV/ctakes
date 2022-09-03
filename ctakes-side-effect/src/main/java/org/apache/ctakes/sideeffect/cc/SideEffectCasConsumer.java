@@ -18,13 +18,8 @@
  */
 package org.apache.ctakes.sideeffect.cc;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Iterator;
-
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
+import org.apache.ctakes.sideeffect.type.SideEffectAnnotation;
 import org.apache.ctakes.sideeffect.util.SEUtil;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CasConsumer_ImplBase;
@@ -34,7 +29,11 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceProcessException;
 import org.apache.uima.util.ProcessTrace;
 
-import org.apache.ctakes.sideeffect.type.SideEffectAnnotation;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Iterator;
 
 public class SideEffectCasConsumer extends CasConsumer_ImplBase {
 	public static final String PARAM_OUTPUT_FILE = "OutputFile";
@@ -73,10 +72,10 @@ public class SideEffectCasConsumer extends CasConsumer_ImplBase {
 			if(jcas == null){
 				jcas = cas.getJCas(); 
 			}
-			
-			JFSIndexRepository indexes = jcas.getJFSIndexRepository();			
-			
-	        String docName = DocumentIDAnnotationUtil.getDocumentID(jcas);        
+
+         JFSIndexRepository indexes = jcas.getJFSIndexRepository();
+
+         String docName = DocIdUtil.getDocumentID( jcas );
 
 	        Iterator seIter = indexes.getAnnotationIndex(SideEffectAnnotation.type).iterator();
 	        while(seIter.hasNext()) {

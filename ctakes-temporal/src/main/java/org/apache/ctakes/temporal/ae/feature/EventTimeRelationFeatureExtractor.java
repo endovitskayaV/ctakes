@@ -18,26 +18,24 @@
  */
 package org.apache.ctakes.temporal.ae.feature;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.relationextractor.ae.features.RelationFeaturesExtractor;
 import org.apache.ctakes.typesystem.type.relation.TemporalTextRelation;
-import org.apache.ctakes.typesystem.type.structured.DocumentID;
 import org.apache.ctakes.typesystem.type.textsem.EventMention;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.ctakes.typesystem.type.textsem.TimeMention;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.cleartk.ml.Feature;
 import org.cleartk.util.ViewUriUtil;
-import org.apache.uima.fit.util.JCasUtil;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
+import java.util.ArrayList;
+import java.util.List;
 /**
  * Given a pair of arguments, if any one of them is an event, get the related event-sectiontime as features 
  * @author CH151862
@@ -58,7 +56,7 @@ RelationFeaturesExtractor<IdentifiedAnnotation,IdentifiedAnnotation> {
 		try{
 			docId = ViewUriUtil.getURI(jCas).toString();// get docID
 		}catch(Exception e){
-			docId = DocumentIDAnnotationUtil.getDocumentID(jCas);
+         docId = DocIdUtil.getDocumentID( jCas );
 		}
 		if(!docId.equals(cachedDocID)){
 			// rebuild cache

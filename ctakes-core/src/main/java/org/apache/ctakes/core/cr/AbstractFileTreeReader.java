@@ -1,16 +1,14 @@
 package org.apache.ctakes.core.cr;
 
 import org.apache.ctakes.core.config.ConfigParameterConstants;
-import org.apache.ctakes.core.note.NoteSpecs;
 import org.apache.ctakes.core.patient.PatientNoteStore;
 import org.apache.ctakes.core.pipeline.ProgressManager;
 import org.apache.ctakes.core.resource.FileLocator;
+import org.apache.ctakes.core.util.BannerWriter;
 import org.apache.ctakes.core.util.NumberedSuffixComparator;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
-import org.apache.ctakes.typesystem.type.structured.DocumentID;
-import org.apache.ctakes.typesystem.type.structured.DocumentIdPrefix;
-import org.apache.ctakes.typesystem.type.structured.DocumentPath;
-import org.apache.ctakes.typesystem.type.structured.SourceData;
+import org.apache.ctakes.core.util.doc.JCasBuilder;
+import org.apache.ctakes.core.util.doc.NoteSpecs;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
@@ -54,6 +52,15 @@ import java.util.regex.Pattern;
 abstract public class AbstractFileTreeReader extends JCasCollectionReader_ImplBase {
 
    static private final Logger LOGGER = Logger.getLogger( "AbstractFileTreeReader" );
+
+   static public final String PARAM_WRITE_BANNER = "WriteBanner";
+   @ConfigurationParameter(
+         name = PARAM_WRITE_BANNER,
+         description = "Write a large banner at each major step of the pipeline.",
+         mandatory = false,
+         defaultValue = "no"
+   )
+   private String _writeBannerChoice;
 
    /**
     * Name of configuration parameter that must be set to the path of
@@ -137,12 +144,28 @@ abstract public class AbstractFileTreeReader extends JCasCollectionReader_ImplBa
    )
    private int _patientLevel = 1;
 
+
+   /**
+    * Some document text, such as that created from csv files, is enclosed in quote characters.
+    * These quotes can negatively impact some AEs such as Sectionizers that work on plain text instead of tokens.
+    * Spaces are used to maintain character indexes.
+    */
+   public static final String STRIP_QUOTES = "StripQuotes";
+   @ConfigurationParameter(
+         name = STRIP_QUOTES,
+         description = "Replace document-enclosing quote characters with space characters.",
+         mandatory = false
+   )
+   private boolean _stripQuotes = false;
+
+
    static protected final String UNKNOWN = "Unknown";
    //   For compatibility with sql db : Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]
    static private final DateFormat DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd hh:mm:ss" );
 
    static private final Pattern CR_LF = Pattern.compile( "\\r\\n" );
 
+   private boolean _writeBanner;
    private File _rootDir;
    private Collection<String> _validExtensions;
    private List<File> _files;
@@ -172,6 +195,36 @@ abstract public class AbstractFileTreeReader extends JCasCollectionReader_ImplBa
 
    public DateFormat getDateFormat() {
       return DATE_FORMAT;
+   }
+
+   /**
+    * @return all files in the directory tree.
+    */
+   protected List<File> getFiles() {
+      return _files;
+   }
+
+   /**
+    * @return the index of the file currently being processed.
+    */
+   protected int getCurrentIndex() {
+      return _currentIndex;
+   }
+
+   /**
+    * Use with care.
+    *
+    * @param index of the file currently being processed.
+    */
+   protected void setCurrentIndex( final int index ) {
+      _currentIndex = index;
+   }
+
+   /**
+    * @return the patientId for that file.  By default this is the name of the directory containing the file.
+    */
+   protected String getPatientId( final File file ) {
+      return _filePatients.getOrDefault( file, SourceMetadataUtil.UNKNOWN_PATIENT );
    }
 
    /**
@@ -243,9 +296,15 @@ abstract public class AbstractFileTreeReader extends JCasCollectionReader_ImplBa
    @Override
    public void initialize( final UimaContext context ) throws ResourceInitializationException {
       super.initialize( context );
+      _writeBanner = _writeBannerChoice.equalsIgnoreCase( "yes" )
+                     || _writeBannerChoice.equalsIgnoreCase( "true" );
+      if ( _writeBanner ) {
+         BannerWriter.writeHello();
+      }
       try {
          _rootDir = FileLocator.getFile( _rootDirPath );
       } catch ( FileNotFoundException fnfE ) {
+         LOGGER.error( "No Directory found at " + _rootDirPath );
          throw new ResourceInitializationException( fnfE );
       }
       _validExtensions = createValidExtensions( _explicitExtensions );
@@ -440,13 +499,82 @@ abstract public class AbstractFileTreeReader extends JCasCollectionReader_ImplBa
    }
 
    /**
+    * @param text document text
+    * @return the document text with document begin and end quote characters replaced with space characters if needed
+    */
+   final protected String handleQuotedDoc( final String text ) {
+      if ( !_stripQuotes || text.isEmpty() ) {
+         return text;
+      }
+      String docText = handleQuotedDoc( text, '\"' );
+      return handleQuotedDoc( docText, '\'' );
+   }
+
+   /**
+    * @param text  document text
+    * @param quote quote character to replace with space characters.
+    * @return the document text with document begin and end quote characters replaced with space characters if needed
+    */
+   static private String handleQuotedDoc( final String text, final char quote ) {
+      String docText = text.trim();
+      final int beginDocQuote = docText.indexOf( quote );
+      if ( beginDocQuote != 0 ) {
+         return text;
+      }
+      final int endDocQuote = docText.lastIndexOf( quote );
+      if ( endDocQuote != docText.length() - 1 ) {
+         return text;
+      }
+      LOGGER.debug( "Replacing document-enclosing quote characters " + quote + " ..." );
+      String unquotedText = text;
+      final int beginQuote = text.indexOf( quote );
+      if ( beginQuote == 0 ) {
+         unquotedText = " " + unquotedText.substring( 1 );
+      } else {
+         unquotedText = unquotedText.substring( 0, beginQuote ) + " " + unquotedText.substring( beginQuote + 1 );
+      }
+      final int endQuote = unquotedText.lastIndexOf( quote );
+      if ( endQuote == unquotedText.length() - 1 ) {
+         unquotedText = unquotedText.substring( 0, unquotedText.length() - 1 ) + " ";
+      } else {
+         unquotedText = unquotedText.substring( 0, endQuote )
+                        + " " + unquotedText.substring( endQuote + 1 );
+      }
+      return unquotedText;
+   }
+
+
+   protected JCasBuilder getJCasBuilder( final File file ) {
+      final String id = createDocumentID( file, getValidExtensions() );
+      final String idPrefix = createDocumentIdPrefix( file, getRootDir() );
+      final String docType = createDocumentType( id );
+      final String docTime = createDocumentTime( file );
+      final String patientId = getPatientId( file );
+      return new JCasBuilder()
+            .setDocId( id )
+            .setDocIdPrefix( idPrefix )
+            .setDocType( docType )
+            .setDocTime( docTime )
+            .setPatientId( patientId )
+            .setDocPath( file.getAbsolutePath() )
+            .nullDocText();
+   }
+
+   /**
     * {@inheritDoc}
     */
    @Override
    public boolean hasNext() {
+      if ( _currentIndex == 0 && _writeBanner ) {
+         BannerWriter.writeProcess();
+      }
       final boolean hasNext = _currentIndex < _files.size();
       if ( !hasNext ) {
-         ProgressManager.getInstance().updateProgress( _files.size() );
+         ProgressManager.getInstance()
+                        .updateProgress( _files.size() );
+         if ( _writeBanner ) {
+            BannerWriter.writeFinished();
+         }
       }
       return hasNext;
    }
@@ -459,28 +587,9 @@ abstract public class AbstractFileTreeReader extends JCasCollectionReader_ImplBa
       final File file = _files.get( _currentIndex );
       ProgressManager.getInstance().updateProgress( _currentIndex );
       _currentIndex++;
-      final String id = createDocumentID( file, getValidExtensions() );
-      LOGGER.info( "Reading " + id + " : " + file.getPath() );
-      readFile( jcas, file );
       // Add document metadata based upon file path
-      final DocumentID documentId = new DocumentID( jcas );
-      documentId.setDocumentID( id );
-      documentId.addToIndexes();
-      final DocumentIdPrefix documentIdPrefix = new DocumentIdPrefix( jcas );
-      final String idPrefix = createDocumentIdPrefix( file, getRootDir() );
-      documentIdPrefix.setDocumentIdPrefix( idPrefix );
-      documentIdPrefix.addToIndexes();
-      final SourceData sourceData = SourceMetadataUtil.getOrCreateSourceData( jcas );
-      final String docType = createDocumentType( id );
-      sourceData.setNoteTypeCode( docType );
-      final String docTime = createDocumentTime( file );
-      sourceData.setSourceRevisionDate( docTime );
-      final String patientId = _filePatients.get( file );
-      SourceMetadataUtil.setPatientIdentifier( jcas, patientId );
-      final DocumentPath documentPath = new DocumentPath( jcas );
-      documentPath.setDocumentPath( file.getAbsolutePath() );
-      documentPath.addToIndexes();
-      LOGGER.info( "Finished Reading." );
+      getJCasBuilder( file ).populate( jcas );
+      readFile( jcas, file );
    }
 
 

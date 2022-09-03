@@ -19,15 +19,16 @@
 package org.apache.ctakes.dictionary.lookup2.consumer;
 
 import org.apache.ctakes.core.resource.FileLocator;
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.core.util.collection.CollectionMap;
 import org.apache.ctakes.core.util.collection.HashSetMap;
 import org.apache.ctakes.dictionary.lookup2.concept.Concept;
 import org.apache.ctakes.dictionary.lookup2.textspan.TextSpan;
 import org.apache.ctakes.dictionary.lookup2.util.CuiCodeUtil;
-import org.apache.ctakes.dictionary.lookup2.util.SemanticUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
-import org.apache.ctakes.typesystem.type.textsem.*;
+import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.ctakes.utils.env.EnvironmentVariable;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
@@ -41,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-import static org.apache.ctakes.typesystem.type.constants.CONST.*;
 
 
 /**
@@ -199,27 +199,9 @@ final public class DefaultTermConsumer extends AbstractTermConsumer {
    }
 
    static private IdentifiedAnnotation createSemanticAnnotation( final JCas jcas, final int cTakesSemantic ) {
-      switch ( cTakesSemantic ) {
-         case NE_TYPE_ID_DRUG: {
-            return new MedicationMention( jcas );
-         }
-         case NE_TYPE_ID_ANATOMICAL_SITE: {
-            return new AnatomicalSiteMention( jcas );
-         }
-         case NE_TYPE_ID_DISORDER: {
-            return new DiseaseDisorderMention( jcas );
-         }
-         case NE_TYPE_ID_FINDING: {
-            return new SignSymptomMention( jcas );
-         }
-         case NE_TYPE_ID_LAB: {
-            return new LabMention( jcas );
-         }
-         case NE_TYPE_ID_PROCEDURE: {
-            return new ProcedureMention( jcas );
-         }
-      }
-      return new EntityMention( jcas );
+      return SemanticGroup.getGroup( cTakesSemantic )
+                          .getCreator()
+                          .apply( jcas );
    }
 
    private Collection<UmlsConcept> createUmlsConcepts( final JCas jcas,
@@ -243,7 +225,7 @@ final public class DefaultTermConsumer extends AbstractTermConsumer {
          if ( !tuis.isEmpty() ) {
             for ( String tui : tuis ) {
                // the concept could have tuis outside this cTakes semantic group
-               if ( SemanticUtil.getTuiSemanticGroupId( tui ) == cTakesSemantic ) {
+               if ( SemanticTui.getTuiFromCode( tui ).getGroupCode() == cTakesSemantic ) {
                   umlsConcepts.addAll( _umlsConceptCreator.createUmlsConcepts( jcas, codingScheme, tui, concept ) );
                   added = true;
                }

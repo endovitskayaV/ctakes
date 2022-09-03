@@ -19,7 +19,7 @@
 package org.apache.ctakes.clinicalpipeline.runtime;
 
 import org.apache.ctakes.core.config.ConfigParameterConstants;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.collection.CollectionReader;
@@ -66,7 +66,7 @@ public abstract class BagOfAnnotationsGenerator<T extends Annotation,K> {
 		JCasIterator casIter = new JCasIterator(reader, ae);
 		while(casIter.hasNext()){
 			JCas jcas = casIter.next();
-			String docId = DocumentIDAnnotationUtil.getDocumentID(jcas);
+         String docId = DocIdUtil.getDocumentID( jcas );
 			
 			// extract info from cas
 			processCas(jcas, outputDir + File.separator + docId);

@@ -1,8 +1,8 @@
 package org.apache.ctakes.core.cc.html;
 
-import org.apache.ctakes.core.semantic.SemanticGroup;
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
 
-import static org.apache.ctakes.core.semantic.SemanticGroup.*;
+import static org.apache.ctakes.core.util.annotation.SemanticGroup.*;
 
 
 public enum SemanticMarkup {

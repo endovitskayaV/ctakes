@@ -2,9 +2,9 @@ package org.apache.ctakes.fhir.element;
 
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
-import org.apache.ctakes.core.semantic.SemanticGroup;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.refsem.Event;
 import org.apache.ctakes.typesystem.type.refsem.EventProperties;
 import org.apache.ctakes.typesystem.type.refsem.OntologyConcept;
@@ -161,7 +161,7 @@ final public class FhirElementFactory {
     * @return fhir id containing name and code.
     */
    static public String createId( final JCas jCas, final String name, final String code ) {
-      return DocumentIDAnnotationUtil.getDocumentID( jCas ) + DIVIDER_CHAR + name + DIVIDER_CHAR + code;
+      return DocIdUtil.getDocumentID( jCas ) + DIVIDER_CHAR + name + DIVIDER_CHAR + code;
    }
 
 //   Identifiers are 0 .. 1 , so unnecessary

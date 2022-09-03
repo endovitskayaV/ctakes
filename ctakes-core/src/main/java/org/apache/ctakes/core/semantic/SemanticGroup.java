@@ -3,14 +3,15 @@ package org.apache.ctakes.core.semantic;
 import org.apache.ctakes.typesystem.type.textsem.*;
 import org.apache.uima.jcas.JCas;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.apache.ctakes.typesystem.type.constants.CONST.*;
 
+/**
+ * @deprecated use SemanticGroup in core.util.annotation
+ */
+@Deprecated
 public enum SemanticGroup {
    DRUG( NE_TYPE_ID_DRUG, "Drug", MedicationMention.class, MedicationMention::new ),
    DISORDER( NE_TYPE_ID_DISORDER, "Disorder", DiseaseDisorderMention.class, DiseaseDisorderMention::new ),
@@ -60,50 +61,27 @@ public enum SemanticGroup {
       return _creator;
    }
 
-   static public SemanticGroup getGroup( final int code ) {
-      return Arrays.stream( values() )
-            .filter( g -> g._code == code )
-            .findFirst()
-            .orElse( UNKNOWN );
+   static public org.apache.ctakes.core.util.annotation.SemanticGroup getGroup( final int code ) {
+      return org.apache.ctakes.core.util.annotation.SemanticGroup.getGroup( code );
    }
 
-   static public SemanticGroup getGroup( final String name ) {
-      return Arrays.stream( values() )
-            .filter( g -> g._name.equals( name ) )
-            .findFirst()
-            .orElse( UNKNOWN );
+   static public org.apache.ctakes.core.util.annotation.SemanticGroup getGroup( final String name ) {
+      return org.apache.ctakes.core.util.annotation.SemanticGroup.getGroup( name );
    }
 
-   static public Collection<SemanticGroup> getGroups( final IdentifiedAnnotation annotation ) {
-      return SemanticTui.getTuis( annotation )
-            .stream()
-            .map( SemanticTui::getGroup )
-            .distinct()
-            .collect( Collectors.toList() );
+   static public Collection<org.apache.ctakes.core.util.annotation.SemanticGroup> getGroups(
+         final IdentifiedAnnotation annotation ) {
+      return org.apache.ctakes.core.util.annotation.SemanticGroup.getGroups( annotation );
    }
 
-   static private final class BestGrouper implements Comparator<SemanticGroup> {
-      static private BestGrouper INSTANCE = new BestGrouper();
-
-      public int compare( final SemanticGroup g1, final SemanticGroup g2 ) {
-         if ( g1 == SemanticGroup.UNKNOWN ) {
-            return 1;
-         }
-         if ( g2 == SemanticGroup.UNKNOWN ) {
-            return -1;
-         }
-         return g2._code - g1._code;
-      }
+   static public org.apache.ctakes.core.util.annotation.SemanticGroup getBestGroup(
+         final IdentifiedAnnotation annotation ) {
+      return org.apache.ctakes.core.util.annotation.SemanticGroup.getBestGroup( getGroups( annotation ) );
    }
 
-   static public SemanticGroup getBestGroup( final IdentifiedAnnotation annotation ) {
-      return getBestGroup( getGroups( annotation ) );
-   }
-
-   static public SemanticGroup getBestGroup( final Collection<SemanticGroup> groups ) {
-      return groups.stream()
-            .min( BestGrouper.INSTANCE )
-            .orElse( UNKNOWN );
+   static public org.apache.ctakes.core.util.annotation.SemanticGroup getBestGroup(
+         final Collection<org.apache.ctakes.core.util.annotation.SemanticGroup> groups ) {
+      return org.apache.ctakes.core.util.annotation.SemanticGroup.getBestGroup( groups );
    }
 
 }

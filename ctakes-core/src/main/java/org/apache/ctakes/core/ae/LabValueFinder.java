@@ -1,7 +1,7 @@
 package org.apache.ctakes.core.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
 import org.apache.ctakes.core.util.textspan.DefaultAspanComparator;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
@@ -369,7 +369,10 @@ final public class LabValueFinder extends JCasAnnotator_ImplBase {
       final Map<Annotation, List<IdentifiedAnnotation>> allCovering = new HashMap<>();
       for ( Class covered : coveredClasses ) {
          for ( Class covering : coveringClasses ) {
-            allCovering.putAll( JCasUtil.indexCovering( jCas, covered, covering ) );
+            final Map<? extends Annotation, List<? extends IdentifiedAnnotation>> map
+                  = JCasUtil.indexCovering( jCas, covered, covering );
+            map.forEach( ( k, v ) -> allCovering.computeIfAbsent( k, c -> new ArrayList<>() )
+                                                .addAll( v ) );
          }
       }
       return allCovering;

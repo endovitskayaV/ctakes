@@ -1,5 +1,6 @@
 package org.apache.ctakes.core.util;
 
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
 import org.apache.ctakes.typesystem.type.refsem.OntologyConcept;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;

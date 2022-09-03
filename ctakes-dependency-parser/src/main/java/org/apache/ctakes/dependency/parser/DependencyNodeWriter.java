@@ -43,7 +43,7 @@ package org.apache.ctakes.dependency.parser;
 
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.syntax.ConllDependencyNode;
 import org.apache.ctakes.typesystem.type.textspan.Sentence;
 import org.apache.log4j.Logger;
@@ -100,10 +100,10 @@ public class DependencyNodeWriter extends CasConsumer_ImplBase {
    private void processView( JCas jCas ) throws Exception {
       // String docText = view.getDocumentText();
 
-      String docName = DocumentIDAnnotationUtil.getDocumentID( jCas );
+      String docName = DocIdUtil.getDocumentID( jCas );
 
       File outputFile;
-      if ( docName == null || docName.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+      if ( docName == null || docName.equals( DocIdUtil.NO_DOCUMENT_ID ) ) {
          docName = "doc" + iv_procCount + "." + iv_outputFormat.toLowerCase();
       } else {
          docName = docName + "." + iv_outputFormat.toLowerCase();

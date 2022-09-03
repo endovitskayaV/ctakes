@@ -2,8 +2,8 @@ package org.apache.ctakes.core.patient;
 
 
 import org.apache.ctakes.core.ae.NamedEngine;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.ctakes.typesystem.type.structured.DocumentIdPrefix;
 import org.apache.ctakes.typesystem.type.structured.Metadata;
 import org.apache.log4j.Logger;
@@ -163,7 +163,7 @@ public enum PatientNoteStore {
     * If it has been set in the document metadata then that is used,
     * otherwise it will come from the document's parent directory.
     * @see SourceMetadataUtil#getPatientIdentifier(JCas)
-    * @see DocumentIDAnnotationUtil#getDocumentIdPrefix(JCas)
+    * @see DocIdUtil#getDocumentIdPrefix(JCas)
     */
    static public String getDefaultPatientId( final JCas viewCas ) {
       final String patientIdentifier = SourceMetadataUtil.getPatientIdentifier( viewCas );
@@ -175,10 +175,10 @@ public enum PatientNoteStore {
 
    /**
     * @return the default identifier for a view of the document.
-    * @see DocumentIDAnnotationUtil#getDocumentID(JCas)
+    * @see DocIdUtil#getDocumentID(JCas)
     */
    static public String getDefaultDocumentId( final JCas viewCas ) {
-      return DocumentIDAnnotationUtil.getDocumentID( viewCas );
+      return DocIdUtil.getDocumentID( viewCas );
    }
 
    /////////////////    Store Views   ///////////////

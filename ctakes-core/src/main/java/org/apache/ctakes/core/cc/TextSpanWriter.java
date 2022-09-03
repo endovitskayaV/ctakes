@@ -2,7 +2,7 @@ package org.apache.ctakes.core.cc;
 
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.refsem.Entity;
 import org.apache.ctakes.typesystem.type.refsem.Event;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
@@ -119,7 +119,7 @@ public class TextSpanWriter extends CasConsumer_ImplBase {
     */
    public void process( final JCas jcas ) {
       LOGGER.info( "Starting processing" );
-      final String docId = DocumentIDAnnotationUtil.getDocumentIdForFile( jcas );
+      final String docId = DocIdUtil.getDocumentIdForFile( jcas );
       File outputFile;
       if ( _outputDirPath == null || _outputDirPath.isEmpty() ) {
          outputFile = new File( docId + FILE_EXTENSION );

@@ -18,15 +18,10 @@
  */
 package org.apache.ctakes.relationextractor.eval;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.lexicalscope.jewel.cli.CliFactory;
 import org.apache.ctakes.relationextractor.ae.ModifierExtractorAnnotator;
-import org.apache.ctakes.relationextractor.eval.SHARPXMI.EvaluationOptions;
 import org.apache.ctakes.typesystem.type.textsem.Modifier;
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -45,11 +40,11 @@ import org.cleartk.ml.jar.GenericJarClassifierFactory;
 import org.cleartk.ml.jar.JarClassifierBuilder;
 import org.cleartk.ml.liblinear.LibLinearStringOutcomeDataWriter;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.lexicalscope.jewel.cli.CliFactory;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.*;
 
-public class ModifierExtractorEvaluation extends SHARPXMI.Evaluation_ImplBase {
+public class ModifierExtractorEvaluation extends RelationEvaluation_ImplBase {
 
   public static final ParameterSettings BEST_PARAMETERS = new ParameterSettings(
       LibLinearStringOutcomeDataWriter.class,
@@ -57,9 +52,30 @@ public class ModifierExtractorEvaluation extends SHARPXMI.Evaluation_ImplBase {
 
   public static void main(String[] args) throws Exception {
     // parse the options, validate them, and generate XMI if necessary
-    final EvaluationOptions options = CliFactory.parseArguments(EvaluationOptions.class, args);
-    SHARPXMI.validate(options);
-    SHARPXMI.generateXMI(options);
+    final RelationExtractorEvaluation.Options options = CliFactory.parseArguments(RelationExtractorEvaluation.Options.class, args);
+    CorpusXMI.validate(options);
+    if(options.getGenerateXMI()) {
+      boolean generateSharp = false, generateDeepPhe = false;
+      if (options.getTestCorpus() == CorpusXMI.Corpus.SHARP || options.getTestCorpus() == CorpusXMI.Corpus.SHARP_RELEASE) {
+        generateSharp = true;
+      } else if (options.getTestCorpus() == CorpusXMI.Corpus.DeepPhe) {
+        generateDeepPhe = true;
+      }
+      for(CorpusXMI.Corpus corpus : options.getTrainCorpus()){
+        if(corpus == CorpusXMI.Corpus.SHARP_RELEASE || corpus == CorpusXMI.Corpus.SHARP){
+          generateSharp = true;
+        }else if(corpus == CorpusXMI.Corpus.DeepPhe){
+          generateDeepPhe = true;
+        }
+      }
+
+      if(generateSharp){
+        SHARPXMI.generateXMI(options.getXMIDirectory(), options.getSharpCorpusDirectory(), options.getSharpBatchesDirectory());
+      }
+      if(generateDeepPhe){
+        DeepPheXMI.generateXMI(options.getXMIDirectory(), options.getDeepPheAnaforaDirectory());
+      }
+    }
 
     // determine the grid of parameters to search through
     // for the full set of LibLinear parameters, see:
@@ -73,17 +89,36 @@ public class ModifierExtractorEvaluation extends SHARPXMI.Evaluation_ImplBase {
       }
     }
 
-    // run the evaluation
-    SHARPXMI.evaluate(
-        options,
-        BEST_PARAMETERS,
-        gridOfSettings,
-        new Function<ParameterSettings, ModifierExtractorEvaluation>() {
-          @Override
-          public ModifierExtractorEvaluation apply(@Nullable ParameterSettings params) {
-            return new ModifierExtractorEvaluation(new File("target/models/modifier"), params);
-          }
-        });
+    List<File> trainFiles = new ArrayList<>();
+    for(CorpusXMI.Corpus corpus : options.getTrainCorpus()){
+      File trainCorpusDirectory;
+      if(corpus == CorpusXMI.Corpus.SHARP) trainCorpusDirectory = options.getSharpBatchesDirectory();
+      else if(corpus == CorpusXMI.Corpus.SHARP_RELEASE) trainCorpusDirectory = options.getSharpCorpusDirectory();
+      else if(corpus == CorpusXMI.Corpus.DeepPhe) trainCorpusDirectory = options.getDeepPheAnaforaDirectory();
+      else{
+        throw new Exception("Train corpus not recognized: " + corpus);
+      }
+      trainFiles.addAll(CorpusXMI.toXMIFiles(options.getXMIDirectory(), CorpusXMI.getTrainTextFiles(corpus, options.getEvaluateOn(), trainCorpusDirectory)));
+    }
+
+    File testCorpusDirectory=null;
+    if(options.getTestCorpus() == CorpusXMI.Corpus.SHARP) testCorpusDirectory = options.getSharpBatchesDirectory();
+    else if(options.getTestCorpus() == CorpusXMI.Corpus.SHARP_RELEASE) testCorpusDirectory = options.getSharpCorpusDirectory();
+    else if(options.getTestCorpus() == CorpusXMI.Corpus.DeepPhe) testCorpusDirectory = options.getDeepPheAnaforaDirectory();
+
+    List<File> testFiles = CorpusXMI.getTestTextFiles(options.getTestCorpus(), options.getEvaluateOn(), testCorpusDirectory);
+
+    if(options.getGridSearch()){
+      Map<ParameterSettings, Double> scoredParams = new HashMap<>();
+      for(ParameterSettings params : gridOfSettings){
+        ModifierExtractorEvaluation eval = new ModifierExtractorEvaluation(new File("target/models/modifier"), params);
+        params.stats = eval.trainAndTest(trainFiles, testFiles);
+        scoredParams.put(params, params.stats.f1());
+      }
+    }else {
+      ModifierExtractorEvaluation eval = new ModifierExtractorEvaluation(new File("target/models/modifier"), BEST_PARAMETERS);
+      System.err.println(eval.trainAndTest(trainFiles, testFiles));
+    }
   }
 
   private ParameterSettings parameterSettings;

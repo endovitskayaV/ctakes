@@ -37,9 +37,11 @@ import org.apache.ctakes.relationextractor.eval.RelationExtractorEvaluation.Hash
 import org.apache.ctakes.temporal.eval.EvaluationOfEventTimeRelations.ParameterSettings;
 import org.apache.ctakes.temporal.keras.KerasStringOutcomeDataWriter;
 import org.apache.ctakes.temporal.keras.ScriptStringFeatureDataWriter;
+import org.apache.ctakes.temporal.nn.ae.WindowBasedAnnotator;
 //import org.apache.ctakes.temporal.nn.ae.JointRelationTokenBasedAnnotator;
 //import org.apache.ctakes.temporal.nn.ae.TwoSentenceTokenBasedAnnotator;
-import org.apache.ctakes.temporal.nn.ae.WindowBasedAnnotator;
+//import org.apache.ctakes.temporal.nn.ae.WindowBasedAnnotator;
+//import org.apache.ctakes.temporal.nn.ae.WindowBasedStructureAnnotator;
 import org.apache.ctakes.temporal.eval.EvaluationOfTemporalRelations_ImplBase;
 import org.apache.ctakes.temporal.eval.Evaluation_ImplBase;
 import org.apache.ctakes.temporal.eval.I2B2Data;
@@ -99,33 +101,33 @@ import com.lexicalscope.jewel.cli.Option;
  */
 public class EvaluationOfNeuralJointRelations extends
 EvaluationOfTemporalRelations_ImplBase{
-	static interface TempRelOptions extends Evaluation_ImplBase.Options{
+	interface TempRelOptions extends Evaluation_ImplBase.Options{
 		@Option
-		public boolean getPrintFormattedRelations();
+		boolean getPrintFormattedRelations();
 
 		@Option
-		public boolean getBaseline();
+		boolean getBaseline();
 
 		@Option
-		public boolean getClosure();
+		boolean getClosure();
 
 		@Option
-		public boolean getUseTmp();
+		boolean getUseTmp();
 
 		@Option
-		public boolean getUseGoldAttributes();
+		boolean getUseGoldAttributes();
 
 		@Option
-		public boolean getSkipTrain();
+		boolean getSkipTrain();
 
 		@Option
-		public boolean getWriteProbabilities();
+		boolean getWriteProbabilities();
 
 		@Option
-		public boolean getTestOnTrain();
+		boolean getTestOnTrain();
 
 		@Option
-		public boolean getSkipWrite();
+		boolean getSkipWrite();
 	}
 
 	//  protected static boolean DEFAULT_BOTH_DIRECTIONS = false;
@@ -169,7 +171,7 @@ EvaluationOfTemporalRelations_ImplBase{
 
 		//    for(ParameterSettings params : possibleParams){
 		try{
-			File workingDir = new File("/Users/chenlin/Projects/THYME/modelFile");///Volumes/chip-nlp/Public/THYME/eval/thyme/");//"/Users/chenlin/Projects/deepLearning/models/selfTrainModel");//"target/eval/thyme/");//"/Volumes/chip-nlp/Public/THYME/eval/thyme/");
+			File workingDir = new File("target/eval/thyme/");///Volumes/chip-nlp/Public/THYME/eval/thyme/");///Users/chenlin/Projects/THYME/modelFile"/Users/chenlin/Projects/deepLearning/models/selfTrainModel");//"target/eval/thyme/");//"/Volumes/chip-nlp/Public/THYME/eval/thyme/");
 			if(!workingDir.exists()) workingDir.mkdirs();
 			if(options.getUseTmp()){
 				File tempModelDir = File.createTempFile("temporal", null, workingDir);
@@ -302,30 +304,6 @@ EvaluationOfTemporalRelations_ImplBase{
 				aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(AddClosure.class));
 			}
 			aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveNonContainsRelations.class));
-			//		aggregateBuilder.add(AnalysisEngineFactory.createPrimitiveDescription(AddFlippedOverlap.class));//add flipped overlap instances to training data
-
-			//		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveNonTLINKRelations.class));//remove non tlink relations, such as alinks
-
-			//		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(Overlap2Contains.class));
-
-			//		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(PreserveEventEventRelations.class));
-			//		aggregateBuilder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveNonUMLSEvents.class));
-
-			//add unlabeled nearby system events as potential links: 
-//						aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(AddEEPotentialRelations.class));
-//						aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(AddPotentialRelations.class));	
-
-			//		aggregateBuilder.add(
-			//				AnalysisEngineFactory.createEngineDescription(EventEventTokenBasedAnnotator.class,//EventEventTokenBasedAnnotator.class,EventEventPathsBasedAnnotator.class, EventEventTokenAndPosBasedAnnotator, EventEventPathsBasedAnnotator
-			//						CleartkAnnotator.PARAM_IS_TRAINING,
-			//						true,
-			//						DefaultDataWriterFactory.PARAM_DATA_WRITER_CLASS_NAME,
-			//						KerasStringOutcomeDataWriter.class,
-			//						DirectoryDataWriterFactory.PARAM_OUTPUT_DIRECTORY,
-			//						new File(directory,"event-event"),
-			//						ScriptStringFeatureDataWriter.PARAM_SCRIPT_DIR,
-			//						"scripts/nn/"
-			//						) );
 
 			aggregateBuilder.add(
 					AnalysisEngineFactory.createEngineDescription(WindowBasedAnnotator.class,//WindowBasedAnnotator.class,//EventTimeTokenAndPathBasedAnnotator.class,//
@@ -355,48 +333,13 @@ EvaluationOfTemporalRelations_ImplBase{
 		aggregateBuilder.add(CopyFromGold.getDescription(EventMention.class, TimeMention.class));
 
 		aggregateBuilder.add(CopyFromSystem.getDescription(Sentence.class));
-//		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(
-//				RemoveCrossSentenceRelations.class,
-//				RemoveCrossSentenceRelations.PARAM_SENTENCE_VIEW,
-//				CAS.NAME_DEFAULT_SOFA,
-//				RemoveCrossSentenceRelations.PARAM_RELATION_VIEW,
-//				GOLD_VIEW_NAME));
 
-		//closure for gold:
-//			aggregateBuilder.add(
-//					AnalysisEngineFactory.createEngineDescription(AddClosure.class),//AnalysisEngineFactory.createPrimitiveDescription(AddTransitiveContainsRelations.class),
-//					CAS.NAME_DEFAULT_SOFA,
-//					GOLD_VIEW_NAME);
-
-		//keep event event tlinks, remove the other relations
-		//		aggregateBuilder.add(
-		//				AnalysisEngineFactory.createEngineDescription(PreserveEventEventRelations.class),
-		//				CAS.NAME_DEFAULT_SOFA,
-		//				GOLD_VIEW_NAME);
-
-		//remove non-tlink relations, such as alinks
-		//		aggregateBuilder.add(
-		//				AnalysisEngineFactory.createEngineDescription(RemoveNonTLINKRelations.class),
-		//				CAS.NAME_DEFAULT_SOFA,
-		//				GOLD_VIEW_NAME);
-
-		//		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveNonUMLSEvents.class));
-
-
-		
 		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveNonContainsRelations.class),
 				CAS.NAME_DEFAULT_SOFA,
 				GOLD_VIEW_NAME);
 
 		aggregateBuilder.add(AnalysisEngineFactory.createEngineDescription(RemoveRelations.class));
 		AnalysisEngineDescription aed = null;
-		//		aed=AnalysisEngineFactory.createEngineDescription(EventEventTokenBasedAnnotator.class,//EventEventTokenBasedAnnotator.class,EventEventPathsBasedAnnotator.class, EventEventTokenAndPosBasedAnnotator
-		//				CleartkAnnotator.PARAM_IS_TRAINING,
-		//				false,
-		//				GenericJarClassifierFactory.PARAM_CLASSIFIER_JAR_PATH,
-		//				new File(new File(directory,"event-event"), "model.jar").getPath());
-		//		aed = EventEventRelationAnnotator.createAnnotatorDescription((new File(directory,"event-event/model.jar")).getAbsolutePath());
-		//		aggregateBuilder.add(aed);
 		aed = AnalysisEngineFactory.createEngineDescription(WindowBasedAnnotator.class,//WindowBasedAnnotator.class,
 				CleartkAnnotator.PARAM_IS_TRAINING,
 				false,
@@ -431,7 +374,7 @@ EvaluationOfTemporalRelations_ImplBase{
 		}else if (!recallModeEvaluation && this.useClosure){
 			outf =  new File("target/brain_biLstm_precision_dev.txt");
 		}else{
-			outf =  new File("target/colon_bioBert_pmc_dev_closure.txt");
+			outf =  new File("target/colon_ernie2filtered_contains_colon_test_closure.txt");
 		}
 
 		PrintWriter outDrop =null;
@@ -635,101 +578,6 @@ EvaluationOfTemporalRelations_ImplBase{
 		relation.addToIndexes();
 
 	}
-
-
-	/*
-  private static String formatRelation(BinaryTextRelation relation) {
-	  IdentifiedAnnotation arg1 = (IdentifiedAnnotation)relation.getArg1().getArgument();
-	  IdentifiedAnnotation arg2 = (IdentifiedAnnotation)relation.getArg2().getArgument();
-	  String text = arg1.getCAS().getDocumentText();
-	  int begin = Math.min(arg1.getBegin(), arg2.getBegin());
-	  int end = Math.max(arg1.getBegin(), arg2.getBegin());
-	  begin = Math.max(0, begin - 50);
-	  end = Math.min(text.length(), end + 50);
-	  return String.format(
-			  "%s(%s(type=%d), %s(type=%d)) in ...%s...",
-			  relation.getCategory(),
-			  arg1.getCoveredText(),
-			  arg1.getTypeID(),
-			  arg2.getCoveredText(),
-			  arg2.getTypeID(),
-			  text.substring(begin, end).replaceAll("[\r\n]", " "));
-  }
-
-  private static void printRelationAnnotations(String fileName, Collection<BinaryTextRelation> relations) {
-
-	  for(BinaryTextRelation binaryTextRelation : relations) {
-
-		  Annotation arg1 = binaryTextRelation.getArg1().getArgument();
-		  Annotation arg2 = binaryTextRelation.getArg2().getArgument();
-
-		  String arg1Type = arg1.getClass().getSimpleName();
-		  String arg2Type = arg2.getClass().getSimpleName();
-
-		  int arg1Begin = arg1.getBegin();
-		  int arg1End = arg1.getEnd();
-		  int arg2Begin = arg2.getBegin();
-		  int arg2End = arg2.getEnd();
-
-		  String category = binaryTextRelation.getCategory();
-
-		  System.out.format("%s\t%s\t%s\t%d\t%d\t%s\t%d\t%d\n", 
-				  fileName, category, arg1Type, arg1Begin, arg1End, arg2Type, arg2Begin, arg2End);
-	  }
-  }
-	 */
-
-
-
-	//	@SuppressWarnings("unchecked")
-	//	private static <SPAN> Collection<BinaryTextRelation> getDuplicateRelations(
-	//			Collection<BinaryTextRelation> goldRelations,
-	//			Function<BinaryTextRelation, ?> getSpan) {
-	//		Set<BinaryTextRelation> duplicateRelations = Sets.newHashSet();
-	//		//build a multimap that map gold span to gold relation
-	//		Multimap<SPAN, BinaryTextRelation> spanToRelation = HashMultimap.create();
-	//		for (BinaryTextRelation relation : goldRelations) {
-	//			spanToRelation.put((SPAN) getSpan.apply(relation), relation);			
-	//		}
-	//		for (SPAN span: spanToRelation.keySet()){
-	//			Collection<BinaryTextRelation> relations = spanToRelation.get(span);
-	//			if(relations.size()>1){//if same span maps to multiple relations
-	//				duplicateRelations.addAll(relations);
-	//			}
-	//		}
-	//		return duplicateRelations;
-	//	}
-
-	//	private static Collection<BinaryTextRelation> removeNonGoldRelations(
-	//			Collection<BinaryTextRelation> systemRelations, Collection<BinaryTextRelation> goldRelations) {
-	//		//remove non-gold pairs from system relations:
-	//		Set<BinaryTextRelation> goodSys = Sets.newHashSet();
-	//
-	//		for(BinaryTextRelation sysrel : systemRelations){
-	//			Annotation sysArg1 = sysrel.getArg1().getArgument();
-	//			Annotation sysArg2 = sysrel.getArg2().getArgument();
-	//			for(BinaryTextRelation goldrel : goldRelations){
-	//				Annotation goldArg1 = goldrel.getArg1().getArgument();
-	//				Annotation goldArg2 = goldrel.getArg2().getArgument();
-	//				if(matchSpan(sysArg1, goldArg1) && matchSpan(sysArg2, goldArg2)){
-	//					goodSys.add(sysrel);
-	//					continue;
-	//				}else if (matchSpan(sysArg2, goldArg1) && matchSpan(sysArg1, goldArg2)){//the order of system pair was flipped 
-	//					if(sysrel.getCategory().equals("OVERLAP")){ //if the relation is overlap, and the arg order was flipped, then change back the order
-	//						RelationArgument tempArg = (RelationArgument) sysrel.getArg1().clone();
-	//						sysrel.setArg1((RelationArgument) sysrel.getArg2().clone());
-	//						sysrel.setArg2(tempArg);
-	//					}//for other types of relation, still maintain the type.
-	//					goodSys.add(sysrel);
-	//					continue;
-	//				}
-	//			}
-	//		}
-	//
-	//		return goodSys;
-	//	}
-
-
 
 
 	public static class RemoveNonTLINKRelations extends JCasAnnotator_ImplBase {
@@ -984,25 +832,6 @@ EvaluationOfTemporalRelations_ImplBase{
 			}
 
 			ArrayList<BinaryTextRelation> temporalRelation = new ArrayList<>(annotationsToRelation.values());//new ArrayList<BinaryTextRelation>();
-			//			Map<List<Annotation>, BinaryTextRelation> temporalRelationLookup = new HashMap<List<Annotation>, BinaryTextRelation>();
-			//
-			//			for (BinaryTextRelation relation : JCasUtil.select(jCas, BinaryTextRelation.class)){
-			//				String relationType = relation.getCategory();
-			//				if(validTemporalType(relationType)){
-			//					Annotation arg1 = relation.getArg1().getArgument();
-			//			        Annotation arg2 = relation.getArg2().getArgument();
-			//			        BinaryTextRelation tempRelation = temporalRelationLookup.get(Arrays.asList(arg1, arg2));
-			//					if( tempRelation == null){
-			//						temporalRelation.add(relation);					
-			//				        temporalRelationLookup.put(Arrays.asList(arg1, arg2), relation);
-			//					}else{//if there is duplicate
-			//						relation.getArg1().removeFromIndexes();
-			//						relation.getArg2().removeFromIndexes();
-			//						relation.removeFromIndexes();
-			//					}
-			//					
-			//				}
-			//			}
 
 			if (!temporalRelation.isEmpty()){
 				TLinkTypeArray2 relationArray = new TLinkTypeArray2(temporalRelation, new AnnotationIdCollection(temporalRelation));
@@ -1039,107 +868,4 @@ EvaluationOfTemporalRelations_ImplBase{
 		}
 	}
 
-	//	public static class AddTransitiveBeforeAndOnRelations extends JCasAnnotator_ImplBase {
-	//
-	//		@Override
-	//		public void process(JCas jCas) throws AnalysisEngineProcessException {
-	//
-	//			// collect many-to-many mappings of containment relations 
-	//			Multimap<Annotation, Annotation> contains = HashMultimap.create();
-	//			Multimap<Annotation, Annotation> before = HashMultimap.create();
-	//			Multimap<Annotation, Annotation> endson = HashMultimap.create();
-	//			Multimap<Annotation, Annotation> beginson = HashMultimap.create();
-	//			Set<BinaryTextRelation> beforeRel = Sets.newHashSet();
-	//
-	//			for (BinaryTextRelation relation : JCasUtil.select(jCas, BinaryTextRelation.class)) {
-	//				if (relation.getCategory().equals("CONTAINS")) {
-	//					Annotation arg1 = relation.getArg1().getArgument();
-	//					Annotation arg2 = relation.getArg2().getArgument();
-	//					contains.put(arg1, arg2);
-	//				}else if (relation.getCategory().equals("BEFORE")) {
-	//					Annotation arg1 = relation.getArg1().getArgument();
-	//					Annotation arg2 = relation.getArg2().getArgument();
-	//					before.put(arg1, arg2);
-	//					beforeRel.add(relation);
-	//				}else if (relation.getCategory().equals("ENDS-ON")) {
-	//					Annotation arg1 = relation.getArg1().getArgument();
-	//					Annotation arg2 = relation.getArg2().getArgument();
-	//					endson.put(arg1, arg2);
-	//					if (!endson.containsEntry(arg2, arg1)) {
-	//						endson.put(arg2, arg1);
-	//					}
-	//				}else if (relation.getCategory().equals("BEGINS-ON")) {
-	//					Annotation arg1 = relation.getArg1().getArgument();
-	//					Annotation arg2 = relation.getArg2().getArgument();
-	//					beginson.put(arg1, arg2);
-	//					if (!beginson.containsEntry(arg2, arg1)) {
-	//						beginson.put(arg2, arg1);
-	//					}
-	//				}
-	//			}
-	//
-	//			// for A BEFORE B, check if A and B Contain anything
-	//			for (BinaryTextRelation brelation : beforeRel) {
-	//				Annotation argA = brelation.getArg1().getArgument();
-	//				Annotation argB = brelation.getArg2().getArgument();
-	//				//add contained before
-	//				for (Annotation childA : contains.get(argA)) {
-	//					for (Annotation childB : contains.get(argB)) {
-	//						if (!before.containsEntry(childA, childB)) {
-	//							//create a new before relation:
-	//							RelationArgument arg1 = new RelationArgument(jCas);
-	//							arg1.setArgument(childA);
-	//							RelationArgument arg2 = new RelationArgument(jCas);
-	//							arg2.setArgument(childB);
-	//							BinaryTextRelation relation = new BinaryTextRelation(jCas);
-	//							relation.setArg1(arg1);
-	//							relation.setArg2(arg2);
-	//							relation.setCategory("BEFORE");
-	//							arg1.addToIndexes();
-	//							arg2.addToIndexes();
-	//							relation.addToIndexes();
-	//							before.put(childA, childB);
-	//						}
-	//					}
-	//				}
-	//				//add ends-on A
-	//				for (Annotation endsOnA : endson.get(argA)) {
-	//					if (!before.containsEntry(endsOnA, argB)) {
-	//						//create a new before relation:
-	//						RelationArgument arg1 = new RelationArgument(jCas);
-	//						arg1.setArgument(endsOnA);
-	//						RelationArgument arg2 = new RelationArgument(jCas);
-	//						arg2.setArgument(argB);
-	//						BinaryTextRelation relation = new BinaryTextRelation(jCas);
-	//						relation.setArg1(arg1);
-	//						relation.setArg2(arg2);
-	//						relation.setCategory("BEFORE");
-	//						arg1.addToIndexes();
-	//						arg2.addToIndexes();
-	//						relation.addToIndexes();
-	//						before.put(endsOnA, argB);
-	//					}
-	//				}
-	//				//add begins-on B
-	//				for (Annotation beginsOnB : beginson.get(argB)) {
-	//					if (!before.containsEntry(argA, beginsOnB)) {
-	//						//create a new before relation:
-	//						RelationArgument arg1 = new RelationArgument(jCas);
-	//						arg1.setArgument(argA);
-	//						RelationArgument arg2 = new RelationArgument(jCas);
-	//						arg2.setArgument(beginsOnB);
-	//						BinaryTextRelation relation = new BinaryTextRelation(jCas);
-	//						relation.setArg1(arg1);
-	//						relation.setArg2(arg2);
-	//						relation.setCategory("BEFORE");
-	//						arg1.addToIndexes();
-	//						arg2.addToIndexes();
-	//						relation.addToIndexes();
-	//						before.put(argA, beginsOnB);
-	//					}
-	//				}
-	//			}
-	//		}
-	//
-	//	}
 }

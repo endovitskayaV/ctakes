@@ -19,7 +19,7 @@
 package org.apache.ctakes.core.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
@@ -69,7 +69,7 @@ public class SimpleSegmentWithTagsAnnotator extends JCasAnnotator_ImplBase {
 		String text = jcas.getDocumentText();
 		if (text == null) {
 			System.out.println("text == null in Segmentannotator");
-			String docID = DocumentIDAnnotationUtil.getDocumentID(jcas);
+         String docID = DocIdUtil.getDocumentID( jcas );
 			System.out.println(" \t\tdocID=" + docID);
 		}
 		if (segmentId.compareTo("parseSectionTag") != 0) {

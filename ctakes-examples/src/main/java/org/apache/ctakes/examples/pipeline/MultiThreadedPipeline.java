@@ -18,21 +18,14 @@
  */
 package org.apache.ctakes.examples.pipeline;
 
-import java.io.IOException;
-
-import org.apache.ctakes.assertion.medfacts.cleartk.ConditionalCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.GenericCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.HistoryCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.PolarityCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.SubjectCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.UncertaintyCleartkAnalysisEngine;
+import org.apache.ctakes.assertion.medfacts.cleartk.*;
 import org.apache.ctakes.contexttokenizer.ae.ContextDependentTokenizerAnnotator;
 import org.apache.ctakes.core.ae.SentenceDetector;
 import org.apache.ctakes.core.ae.SimpleSegmentAnnotator;
 import org.apache.ctakes.core.ae.TokenizerAnnotatorPTB;
 import org.apache.ctakes.core.config.ConfigParameterConstants;
 import org.apache.ctakes.core.cr.FilesInDirectoryCollectionReader;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.dependency.parser.ae.ClearNLPDependencyParserAE;
 import org.apache.ctakes.dictionary.lookup2.ae.DefaultJCasTermAnnotator;
 import org.apache.ctakes.lvg.ae.ThreadSafeLvg;
@@ -52,6 +45,8 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.ProcessTrace;
+
+import java.io.IOException;
 
 public class MultiThreadedPipeline {
 
@@ -152,7 +147,7 @@ public class MultiThreadedPipeline {
     public void entityProcessComplete(CAS aCas, EntityProcessStatus aStatus) {
       try {
         JCas jcas = aCas.getJCas();
-        String docId = DocumentIDAnnotationUtil.getDeepDocumentId(jcas);
+         String docId = DocIdUtil.getDeepDocumentId( jcas );
         System.out.println("Doc id for entity process complete: " + docId);
         System.out.println("Found " + JCasUtil.select(jcas, IdentifiedAnnotation.class).size() + " medical terms.");
         // The following was a bit verbose, but here's how you'd print out the text of each discovered entity span:

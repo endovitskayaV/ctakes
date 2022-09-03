@@ -20,6 +20,7 @@ package org.apache.ctakes.ytex.uima.annotators;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.CharBuffer;
@@ -27,9 +28,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,9 +54,11 @@ import org.apache.uima.resource.ResourceInitializationException;
 
 
 /**
- * Negex adapted to cTAKES. Checks negation status of named entities. Loads
- * negex triggers from classpath:
+ * Negex adapted to cTAKES. Checks negation status of named entities. 
+ * `Loads negex triggers from classpath:
  * <tt>/org/apache/ctakes/ytex/uima/annotators/negex_triggers.txt</tt>
+ * Loads negex ignore words from classpath:
+ * <tt>/org/apache/ctakes/ytex/uima/annotators/negex_excluded_keys.txt</tt>
  * <p/>
  * The meaning of the certainty and confidence attributes is nowhere documented
  * for cTakes. There are several ways of handling 'maybes', see below. Default
@@ -84,7 +89,7 @@ import org.apache.uima.resource.ResourceInitializationException;
  * an annotation type. Will see if it is negated; if so will set the negated and
  * possible boolean values on the annotation.
  * 
- * @author vijay
+ * @author vijay, heavily updated by Peter A.
  * 
  */
 @PipeBitInfo(
@@ -93,18 +98,37 @@ import org.apache.uima.resource.ResourceInitializationException;
 		dependencies = { PipeBitInfo.TypeProduct.SENTENCE, PipeBitInfo.TypeProduct.IDENTIFIED_ANNOTATION }
 )
 public class NegexAnnotator extends JCasAnnotator_ImplBase {
+	private static final String NEGEX_EXCLUDED_KEYS = "/org/apache/ctakes/ytex/uima/annotators/negex_excluded_keys.txt";
+	private static final String NEGEX_TRIGGERS = "/org/apache/ctakes/ytex/uima/annotators/negex_triggers.txt";
 	private static final Log log = LogFactory.getLog(NegexAnnotator.class);
-	private List<NegexRule> listNegexRules = null;
 	private boolean negatePossibilities = true;
 	private boolean checkPossibilities = true;
 	private boolean storeAsInterval = false;
 	private String targetTypeName = null;
+	// only look for rules matching around the NE
+	// by this window.  Long unpunctuated notes
+	// may display tens of spurious matches which 
+	// are thrown away for each NE.
+	private final int MATCHER_WINDOW = 200;
+	
+	private final int STOP_INIT = Integer.MAX_VALUE;
+
+	private HashMap<String,ArrayList<NegexRule>> wordCloud = new HashMap<String,ArrayList<NegexRule>>(300);
+	
+	// throwaway words used in negation expressions that would result in performing extra matches
+	private List<String> excludedKeyWords = null;
+	private int ruleCount;
+	
+	private final static String[] tagList = { "[CONJ]", "[PSEU]", "[PREN]", "[POST]", "[POSP]" };
+
 
 	@Override
 	public void initialize(UimaContext aContext)
 			throws ResourceInitializationException {
 		super.initialize(aContext);
-		this.listNegexRules = this.initializeRules();
+		this.excludedKeyWords = this.initalizeExcludedKeyWords();
+		this.initializeRules();
+		
 		negatePossibilities = getBooleanConfigParam(aContext,
 				"negatePossibilities", negatePossibilities);
 		if (negatePossibilities) {
@@ -125,95 +149,156 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 		return paramValue == null ? defaultVal : paramValue;
 
 	}
-
-	private List<String> initalizeRuleList() {
-		List<String> rules = new ArrayList<String>();
+	
+	private List<String> listReader(String path) throws ResourceInitializationException {
+		List<String> list = new ArrayList<String>();
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(this.getClass()
-					.getResourceAsStream(
-							"/org/apache/ctakes/ytex/uima/annotators/negex_triggers.txt")));
+			InputStream stream = this.getClass().getResourceAsStream(path);
+			if (stream == null) {
+				log.error("Unable to find resource: " + path);
+				throw new ResourceInitializationException(path, null);
+			}
+			reader = new BufferedReader(new InputStreamReader(stream));
 			String line = null;
 			try {
 				while ((line = reader.readLine()) != null)
-					rules.add(line);
+					if (line.charAt(0) != '#') {
+						list.add(line);
+					}
 			} catch (IOException e) {
-				log.error("oops", e);
-			}
-			Collections.sort(rules, new Comparator<String>() {
-
-				@Override
-				public int compare(String o1, String o2) {
-					int l1 = o1.trim().length();
-					int l2 = o2.trim().length();
-					if (l1 < l2)
-						return 1;
-					else if (l1 > l2)
-						return -1;
-					else
-						return 0;
-				}
-
-			});
+				log.error("Error reading list: " + path, e);
+			} 
+			
 		} finally {
 			try {
 				if (reader != null)
 					reader.close();
 			} catch (IOException e) {
-				log.error("oops", e);
+				log.error("Error closing list", e);
 			}
 		}
+		return list;
+	}
+	
+	private List<String> initalizeRuleList() throws ResourceInitializationException {
+		List<String> rules = listReader(NEGEX_TRIGGERS);
+		Collections.sort(rules, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				int l1 = o1.trim().length();
+				int l2 = o2.trim().length();
+				if (l1 < l2)
+					return 1;
+				else if (l1 > l2)
+					return -1;
+				else
+					return 0;
+			}
+
+		});
 		return rules;
 	}
+	
+	private List<String> initalizeExcludedKeyWords() throws ResourceInitializationException {
+		return listReader(NEGEX_EXCLUDED_KEYS);
+	}
 
-	private List<NegexRule> initializeRules() {
+	private void initializeRules() throws ResourceInitializationException {
 		List<String> listRules = this.initalizeRuleList();
-		List<NegexRule> listNegexRules = new ArrayList<NegexRule>(
-				listRules.size());
+		this.ruleCount = listRules.size();
 		Iterator<String> iRule = listRules.iterator();
 		while (iRule.hasNext()) {
 			String rule = iRule.next();
 			Pattern p = Pattern.compile("[\\t]+"); // Working.
 			String[] ruleTokens = p.split(rule.trim());
 			if (ruleTokens.length == 2) {
-				// Add the regular expression characters to tokens and asemble
-				// the
-				// rule again.
+				// Add the regular expression characters to tokens and assemble
+				// the rule again.
 				String[] ruleMembers = ruleTokens[0].trim().split(" ");
 				String rule2 = "";
+				boolean punctRule = false;
 				for (int i = 0; i <= ruleMembers.length - 1; i++) {
 					if (!ruleMembers[i].equals("")) {
 						if (ruleMembers.length == 1) {
-							rule2 = ruleMembers[i];
+							if (ruleMembers[0].length() == 1) {
+								String chrRule = ruleMembers[0];
+								if (chrRule.equals("\\")) {
+									chrRule += "\\";
+								}
+								rule2 = "[" + chrRule + "]";
+								punctRule = true;
+							} else {
+								rule2 = ruleMembers[i];
+							}	
 						} else {
 							rule2 = rule2 + ruleMembers[i].trim() + "\\s+";
 						}
 					}
 				}
-				// Remove the last s+
+				// Remove the last \\s+ (we will re-add it below)
 				if (rule2.endsWith("\\s+")) {
 					rule2 = rule2.substring(0, rule2.lastIndexOf("\\s+"));
 				}
+				
+				String rule3 = null;
 
-				String rule3 = "(?m)(?i)[[\\p{Punct}&&[^\\]\\[]]|\\s+]("
-						+ rule2 + ")[[\\p{Punct}&&[^_]]|\\s+]";
+				if (punctRule) {
+					rule3 = rule2 + "\\s+";
+				} else {
+					rule3 = "(?m)(?i)[[\\p{Punct}&&[^\\]\\[]]|\\s+]("
+							+ rule2 + ")[[\\p{Punct}&&[^_]]|\\s+]";
+				}
 
 				Pattern p2 = Pattern.compile(rule3.trim());
-				listNegexRules.add(new NegexRule(p2, rule2, ruleTokens[1]
-						.trim()));
+				NegexRule aRule = new NegexRule(p2, rule2, ruleTokens[1].trim());
+				populateWordCloud(ruleMembers, aRule);
+				
 			} else {
 				log.warn("could not parse rule:" + rule);
 			}
-			// Matcher m = p2.matcher(sentence);
-			//
-			// while (m.find() == true) {
-			// sentence = m.replaceAll(" " + ruleTokens[1].trim()
-			// + m.group().trim().replaceAll(" ", filler)
-			// + ruleTokens[1].trim() + " ");
-			// }
 		}
-		return listNegexRules;
+		if (log.isDebugEnabled()) {
+			// this helps to manualy populate the excluded words list
+			for (Entry<String, ArrayList<NegexRule>> entry : wordCloud.entrySet()) {
+				log.debug("key: " + entry.getKey() + "  expression count: " + entry.getValue().size());
+			}
+		}
+		return;
 
+	}
+
+	/**
+	 * Creates a hashtable of arrays where the keys are words in regexps that can predict
+	 * a potential hit.  Each array is a bin of regex rules that are triggered if the key word is
+	 * found in the incoming sentence text.  Note that rules can live in multiple bins, so at the moment
+	 * of execution we also make sure that any single rule is only executed once for each NE.
+	 * eg.  there is an entry with key 'no' and array of all rules containing "no" in their Regex.
+	 * We will run these rules only on sentences that contain the string "no" 
+	 * 
+	 * It's not perfect, but it greatly reduces the number of match calls from the previous version
+	 * which blindly executed  all of them all the time.
+	 * 
+	 * @param ruleMembers
+	 * @param aRule
+	 */
+	private void populateWordCloud(String[] ruleMembers, NegexRule aRule) {
+		for(String token : ruleMembers) {
+			boolean skip = false;
+			for(String stp : this.excludedKeyWords) {
+				skip = (stp.equals(token));
+				if(skip == true) break;
+			}
+			if (!skip) {
+				ArrayList<NegexRule> entry = wordCloud.get(token);
+				if(entry == null) {
+					entry = new ArrayList<NegexRule>();
+					wordCloud.put(token, entry);
+					log.debug("Created a wordcloud bin for: " + token);
+				}
+				entry.add(aRule);
+			}
+		}
 	}
 
 	public static interface TargetAnnoFilter {
@@ -227,7 +312,6 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 	 * 
 	 */
 	public static class NamedEntityTargetAnnoFilter implements TargetAnnoFilter {
-
 		@Override
 		public boolean filter(Annotation anno) {
 			if (!(anno instanceof IdentifiedAnnotation))
@@ -236,14 +320,13 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 			return ia.getOntologyConceptArr() != null
 					&& ia.getOntologyConceptArr().size() > 0;
 		}
-
 	}
 
 	@Override
 	public void process(JCas aJCas) {
-		AnnotationIndex sentenceIdx = aJCas
+		AnnotationIndex<?> sentenceIdx = aJCas
 				.getAnnotationIndex(Sentence.typeIndexID);
-		AnnotationIndex neIdx = aJCas
+		AnnotationIndex<?> neIdx = aJCas
 				.getAnnotationIndex(IdentifiedAnnotation.typeIndexID);
 		negateAnnotations(aJCas, sentenceIdx, neIdx,
 				new NamedEntityTargetAnnoFilter());
@@ -260,17 +343,28 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 		}
 	}
 
-	private void negateAnnotations(JCas aJCas, AnnotationIndex sentenceIdx,
-			AnnotationIndex targetIdx, TargetAnnoFilter filter) {
-		FSIterator sentenceIter = sentenceIdx.iterator();
+	private void negateAnnotations(JCas aJCas, AnnotationIndex<?> sentenceIdx,
+			AnnotationIndex<?> targetIdx, TargetAnnoFilter filter) {
+		FSIterator<?> sentenceIter = sentenceIdx.iterator();
+		// initialize to beyond end of sentence
+		int lastStop = STOP_INIT;
 		while (sentenceIter.hasNext()) {
 			Sentence s = (Sentence) sentenceIter.next();
-			FSIterator neIter = targetIdx.subiterator(s);
+			String sText = "." + s.getCoveredText().toLowerCase() + ".";
+			FSIterator<?> neIter = targetIdx.subiterator(s);
 			while (neIter.hasNext()) {
 				Annotation ne = (Annotation) neIter.next();
-				if (filter == null || filter.filter(ne))
-					checkNegation(aJCas, s, ne);
-				// checkNegation2(aJCas, s, ne);
+				if (filter == null || filter.filter(ne)) {
+					int thisStop = checkNegation(aJCas, sText, s,  ne, lastStop);
+					// pick up from the last 
+					// CONJ tag and move forward.
+					// [preneg?] NE NE [postneg?] [CONJ] (next possible negations)
+					// reduces the number of matcher calls in complex sentences.
+					if (thisStop > lastStop || lastStop == STOP_INIT) {
+						lastStop = thisStop;
+					}
+					log.debug("LastStop:" + lastStop);
+				}
 			}
 		}
 	}
@@ -460,62 +554,57 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 	 * 
 	 * @param aJCas
 	 *            for adding annotations
+	 * @param sText
+	 * 				the covered text bracketed by . so it doesn't have to be re-done for each annotation in a sentence
 	 * @param s
 	 *            the sentence in which we will look
 	 * @param ne
 	 *            the named entity whose negation status will be checked.
-	 * @param checkPoss
-	 *            should possibility be checked?
-	 * @param negPoss
-	 *            should possiblities be negated?
+	 * @param lastpos
+	 * 			In the latter parts of compound sentences where the negation mode shifts, we can use this 
+	 * 			to ignore what we've already processed, to reduce the number of unnecessary regex matches.
+	 * @return endIndex for a possible [CONJ] after the current annotation.  This helps
+	 			  reset the start for subsequent regex scans to after the [CONJ]
 	 */
-	private void checkNegation(JCas aJCas, Sentence s, Annotation ne) {
+	private int checkNegation(JCas aJCas, String sText, Sentence s, Annotation ne, int lastStop) {
 		if (storeAsInterval && ne instanceof IdentifiedAnnotation) {
 			// default is affirmed, which is coded as confidence = 1
 			((IdentifiedAnnotation) ne).setConfidence(1);
 		}
-		// need to add . on either side due to the way the regexs are built
-		String sentence = "." + s.getCoveredText() + ".";
 		// allocate array of tokens
 		// this maps each character of the sentence to a token
-		NegexToken[] tokens = new NegexToken[sentence.length()];
+		NegexToken[] tokens = new NegexToken[sText.length()];
 		// char buffer for modify the sentence
 		// we want to 'black out' trigger words already found and the phrase we
 		// were looking for
-		CharBuffer buf = CharBuffer.wrap(sentence.toCharArray());
+		CharBuffer buf = CharBuffer.wrap(sText.toCharArray());
 		// calculate location of the ne relative to the sentence
 		int neRelStart = ne.getBegin() - s.getBegin() + 1;
 		int neRelEnd = ne.getEnd() - s.getBegin() + 1;
-		// black out the ne in the sentence buffer
+		
 		for (int i = neRelStart; i < neRelEnd; i++) {
 			// black out the named entity from the char buffer
 			buf.put(i, '_');
 		}
-		// look for negex rules in the sentence
-		for (NegexRule rule : this.listNegexRules) {
-			Matcher m = rule.getPattern().matcher(buf);
-			while (m.find() == true) {
-				// see if the range has not already been marked
-				boolean bUnoccupied = true;
-				for (int i = m.start(); i < m.end() && bUnoccupied; i++)
-					bUnoccupied = tokens[i] == null;
-				if (bUnoccupied) {
-					// mark the range in the sentence with this token
-					// black it out so other rules do not match
-					NegexToken t = new NegexToken(m.start(), m.end(), rule);
-					for (int i = m.start(); i < m.end() && bUnoccupied; i++) {
-						// black out this range from the char buffer
-						buf.put(i, '_');
-						// add the token to the array
-						tokens[i] = t;
-					}
-				}
+
+		// but if there was a stop clause from a previous phrase, blank up until then too.
+		// because we may have a new negation 
+		if (lastStop != 0 && lastStop < neRelStart) {
+			for (int i = 0; i < lastStop ; i++) {
+				buf.put(i, '_');
 			}
 		}
-		// prenegation
+		
+		if(log.isDebugEnabled()) {
+			// look for negex rules in the sentence
+			log.debug("Negex sentence: " + s.getCoveredText());
+			log.debug("Negex NE: ("+neRelStart+","+neRelEnd+")" + ne.getCoveredText());
+		}
+		
+		populateHits(tokens, buf, neRelStart, neRelEnd);
+		// pre-negation
 		// look for a PREN rule before the ne, without any intervening stop tags
-		NegexToken t = this.findTokenByTag("[PREN]", new String[] { "[CONJ]",
-				"[PSEU]", "[POST]", "[PREP]", "[POSP]" }, true, neRelStart,
+		NegexToken t = this.findTokenByTag("[PREN]", tagList, true, neRelStart,
 				neRelEnd, tokens);
 		if (t != null) {
 			// hit - negate the ne
@@ -523,283 +612,114 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 		} else {
 			// look for POST rule after the ne, without any intervening stop
 			// tags
-			t = this.findTokenByTag("[POST]", new String[] { "[CONJ]",
-					"[PSEU]", "[PREN]", "[PREP]", "[POSP]" }, false,
+			t = this.findTokenByTag("[POST]", tagList, false,
 					neRelStart, neRelEnd, tokens);
 			if (t != null) {
 				annotateNegation(aJCas, s, ne, t, true, false);
 			} else if (this.checkPossibilities || this.negatePossibilities) {
 				// check possibles
-				t = this.findTokenByTag("[PREP]", new String[] { "[CONJ]",
-						"[PSEU]", "[PREN]", "[POST]", "[POSP]" }, true,
+				t = this.findTokenByTag("[PREP]", tagList, true,
 						neRelStart, neRelEnd, tokens);
 				if (t != null) {
 					annotateNegation(aJCas, s, ne, t, false, true);
 				} else {
-					t = this.findTokenByTag("[POSP]", new String[] { "[CONJ]",
-							"[PSEU]", "[PREN]", "[POST]", "[PREP]" }, false,
+					t = this.findTokenByTag("[POSP]", tagList, false,
 							neRelStart, neRelEnd, tokens);
 					if (t != null)
 						annotateNegation(aJCas, s, ne, t, true, true);
 				}
 			}
 		}
+
+		// now see if we found the first stop clause (CONJ) only after our current entity
+		// if not actions need to proceed from sentence start
+
+		if (findTokenByTag("[CONJ]", tagList, false, neRelEnd,
+				neRelEnd, tokens) != null) {
+			return 0;
+		}
+		
+		// now see if we found a stop clause (CONJ) before our current entity
+		// if so, set up a blanking index we can use in the next iteration to ignore
+		// any possible negations that came before the semantic break.
+		//    "no headache but reports rash"  
+		//     "rash but not headache"
+		// should bother work
+
+		// now look for one before current annotation
+		t = this.findTokenByTag("[CONJ]", tagList, true, neRelStart,
+				neRelStart, tokens);
+		if (t != null) 
+			return t.getEnd();
+
+		return 0;
 	}
 
-	private void checkNegation2(JCas aJCas, Sentence s,
-			IdentifiedAnnotation ne, boolean negPoss) {
-		// Sorter s = new Sorter();
-		String sToReturn = "";
-		String sScope = "";
-		// String sentencePortion = "";
-		// ArrayList sortedRules = null;
-
-		String filler = "_";
-		// boolean negationScope = true;
-
-		// Sort the rules by length in descending order.
-		// Rules need to be sorted so the longest rule is always tried to match
-		// first.
-		// Some of the rules overlap so without sorting first shorter rules
-		// (some of them POSSIBLE or PSEUDO)
-		// would match before longer legitimate negation rules.
-		//
-
-		// There is efficiency issue here. It is better if rules are sorted by
-		// the
-		// calling program once and used without sorting in GennegEx.
-		// sortedRules = this.rules;
-
-		// Process the sentence and tag each matched negation
-		// rule with correct negation rule tag.
-		//
-		// At the same time check for the phrase that we want to decide
-		// the negation status for and
-		// tag the phrase with [PHRASE] ... [PHRASE]
-		// In both the negation rules and in the phrase replace white space
-		// with "filler" string. (This could cause problems if the sentences
-		// we study has "filler" on their own.)
-
-		// Sentence needs one character in the beginning and end to match.
-		// We remove the extra characters after processing.
-		// vng String sentence = "." + sentenceString + ".";
-		String sentence = "." + s.getCoveredText() + ".";
-
-		// Tag the phrases we want to detect for negation.
-		// Should happen before rule detection.
-		// vng String phrase = phraseString;
-		String phrase = ne.getCoveredText();
-		Pattern pph = Pattern.compile(phrase.trim(), Pattern.CASE_INSENSITIVE);
-		Matcher mph = pph.matcher(sentence);
-		CharBuffer buf = CharBuffer.wrap(sentence.toCharArray());
-
-		while (mph.find() == true) {
-			sentence = mph.replaceAll(" [PHRASE]"
-					+ mph.group().trim().replaceAll(" ", filler) + "[PHRASE]");
-		}
-
-		for (NegexRule rule : this.listNegexRules) {
-			Matcher m = rule.getPattern().matcher(sentence);
-			while (m.find() == true) {
-				sentence = m.replaceAll(" " + rule.getTag()
-						+ m.group().trim().replaceAll(" ", filler)
-						+ rule.getTag() + " ");
-			}
-		}
-
-		// Exchange the [PHRASE] ... [PHRASE] tags for [NEGATED] ... [NEGATED]
-		// based of PREN, POST rules and if flag is set to true
-		// then based on PREP and POSP, as well.
-
-		// Because PRENEGATION [PREN} is checked first it takes precedent over
-		// POSTNEGATION [POST].
-		// Similarly POSTNEGATION [POST] takes precedent over POSSIBLE
-		// PRENEGATION [PREP]
-		// and [PREP] takes precedent over POSSIBLE POSTNEGATION [POSP].
-
-		Pattern pSpace = Pattern.compile("[\\s+]");
-		String[] sentenceTokens = pSpace.split(sentence);
-		StringBuilder sb = new StringBuilder();
-
-		// Check for [PREN]
-		for (int i = 0; i < sentenceTokens.length; i++) {
-			sb.append(" " + sentenceTokens[i].trim());
-			if (sentenceTokens[i].trim().startsWith("[PREN]")) {
-
-				for (int j = i + 1; j < sentenceTokens.length; j++) {
-					if (sentenceTokens[j].trim().startsWith("[CONJ]")
-							|| sentenceTokens[j].trim().startsWith("[PSEU]")
-							|| sentenceTokens[j].trim().startsWith("[POST]")
-							|| sentenceTokens[j].trim().startsWith("[PREP]")
-							|| sentenceTokens[j].trim().startsWith("[POSP]")) {
-						break;
+	/**
+	 * Peter A. 12-2021
+	 * Try to execute as few Regex operations as possible
+	 * We do this by only testing rules that have at least one word in common with the current sentence frag
+	 * with the words in sentence buf.  We are eliminating the rules we know would fail.
+	 * and matcher is much less efficient than indexOf
+	 * @param tokens
+	 * @param buf
+	 * @param neEnd 
+	 * @param neStart 
+	 */
+	private void populateHits(NegexToken[] tokens, CharBuffer buf, int neStart, int neEnd) {
+		String bText = buf.toString();
+		int count = 0;
+		HashMap<Integer,Integer> deDupe = new HashMap<Integer,Integer>(this.ruleCount);
+		for (Entry<String, ArrayList<NegexRule>> ent : this.wordCloud.entrySet()) {
+			if (bText.indexOf(ent.getKey()) >= 0) {
+				for (NegexRule rule : ent.getValue()) {
+					Integer iH = new Integer(rule.hashCode());
+					if (deDupe.containsKey(iH)) {
+						// do not execute the same rule twice
+						// this is because in the wordCloud, same rules may occur in different bins
+						continue;
 					}
-
-					if (sentenceTokens[j].trim().startsWith("[PHRASE]")) {
-						sentenceTokens[j] = sentenceTokens[j].trim()
-								.replaceAll("\\[PHRASE\\]", "[NEGATED]");
-					}
-				}
-			}
-		}
-
-		sentence = sb.toString();
-		pSpace = Pattern.compile("[\\s+]");
-		sentenceTokens = pSpace.split(sentence);
-		StringBuilder sb2 = new StringBuilder();
-
-		// Check for [POST]
-		for (int i = sentenceTokens.length - 1; i > 0; i--) {
-			sb2.insert(0, sentenceTokens[i] + " ");
-			if (sentenceTokens[i].trim().startsWith("[POST]")) {
-				for (int j = i - 1; j > 0; j--) {
-					if (sentenceTokens[j].trim().startsWith("[CONJ]")
-							|| sentenceTokens[j].trim().startsWith("[PSEU]")
-							|| sentenceTokens[j].trim().startsWith("[PREN]")
-							|| sentenceTokens[j].trim().startsWith("[PREP]")
-							|| sentenceTokens[j].trim().startsWith("[POSP]")) {
-						break;
-					}
-
-					if (sentenceTokens[j].trim().startsWith("[PHRASE]")) {
-						sentenceTokens[j] = sentenceTokens[j].trim()
-								.replaceAll("\\[PHRASE\\]", "[NEGATED]");
-					}
-				}
-			}
-		}
-		sentence = sb2.toString();
-
-		// If POSSIBLE negation is detected as negation.
-		// negatePossible being set to "true" then check for [PREP] and [POSP].
-		if (negPoss == true) {
-			pSpace = Pattern.compile("[\\s+]");
-			sentenceTokens = pSpace.split(sentence);
-
-			StringBuilder sb3 = new StringBuilder();
-
-			// Check for [PREP]
-			for (int i = 0; i < sentenceTokens.length; i++) {
-				sb3.append(" " + sentenceTokens[i].trim());
-				if (sentenceTokens[i].trim().startsWith("[PREP]")) {
-
-					for (int j = i + 1; j < sentenceTokens.length; j++) {
-						if (sentenceTokens[j].trim().startsWith("[CONJ]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[PSEU]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[POST]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[PREN]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[POSP]")) {
+					deDupe.put(iH, iH);
+					Matcher m = rule.getPattern().matcher(buf);
+					count++;
+					while (m.find() == true) {
+						if (log.isDebugEnabled()) {
+							log.debug("Regex buf before: " + buf.toString());
+							log.debug("rule: \'" + rule.getRule() + "\' match at :" + m.start() + "," + m.end() );
+						}
+						// in poorly punctuated notes ignore matches which occur far from the NE we
+						// are judging.
+						if ((m.start() < Math.max(0, neStart - MATCHER_WINDOW)) ||
+								m.end() > (neEnd + MATCHER_WINDOW)) {
 							break;
 						}
-
-						if (sentenceTokens[j].trim().startsWith("[PHRASE]")) {
-							sentenceTokens[j] = sentenceTokens[j].trim()
-									.replaceAll("\\[PHRASE\\]", "[POSSIBLE]");
+						deDupe.clear();
+						boolean bUnoccupied = true;
+						// When two adjacent rules share the same punctuation or space
+						// code must allow for overlap of one character e.g. in the phrase  "A but no B" 
+						// " but " is CONJ while " no " is PREN.  The space between then shows up on both
+						// regex matches!!!
+						for (int i = m.start(); i < m.end() && bUnoccupied; i++)
+							bUnoccupied = (tokens[i] == null || (tokens[i].getEnd() - 1) == i);
+						
+						if (bUnoccupied) {
+							// mark the range in the sentence with this token
+							NegexToken t = new NegexToken(m.start(), m.end(), rule);
+							for (int i = m.start(); i < m.end() && bUnoccupied; i++) {
+								// blank out this range from the char buffer
+								buf.put(i, '_');
+								// add the token to the array
+								tokens[i] = t;
+							}
+							// sync text with new buf;
+							log.debug("Regex buf after: " + buf.toString());
+							bText = buf.toString();
 						}
 					}
 				}
 			}
-			sentence = sb3.toString();
-			pSpace = Pattern.compile("[\\s+]");
-			sentenceTokens = pSpace.split(sentence);
-			StringBuilder sb4 = new StringBuilder();
-
-			// Check for [POSP]
-			for (int i = sentenceTokens.length - 1; i > 0; i--) {
-				sb4.insert(0, sentenceTokens[i] + " ");
-				if (sentenceTokens[i].trim().startsWith("[POSP]")) {
-					for (int j = i - 1; j > 0; j--) {
-						if (sentenceTokens[j].trim().startsWith("[CONJ]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[PSEU]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[PREN]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[PREP]")
-								|| sentenceTokens[j].trim()
-										.startsWith("[POST]")) {
-							break;
-						}
-
-						if (sentenceTokens[j].trim().startsWith("[PHRASE]")) {
-							sentenceTokens[j] = sentenceTokens[j].trim()
-									.replaceAll("\\[PHRASE\\]", "[POSSIBLE]");
-						}
-					}
-				}
-			}
-			sentence = sb4.toString();
 		}
-
-		// Remove the filler character we used.
-		sentence = sentence.replaceAll(filler, " ");
-
-		// Remove the extra periods at the beginning
-		// and end of the sentence.
-		sentence = sentence.substring(0, sentence.trim().lastIndexOf('.'));
-		sentence = sentence.replaceFirst(".", "");
-
-		// Get the scope of the negation for PREN and PREP
-		if (sentence.contains("[PREN]") || sentence.contains("[PREP]")) {
-			int startOffset = sentence.indexOf("[PREN]");
-			if (startOffset == -1) {
-				startOffset = sentence.indexOf("[PREP]");
-			}
-
-			int endOffset = sentence.indexOf("[CONJ]");
-			if (endOffset == -1) {
-				endOffset = sentence.indexOf("[PSEU]");
-			}
-			if (endOffset == -1) {
-				endOffset = sentence.indexOf("[POST]");
-			}
-			if (endOffset == -1) {
-				endOffset = sentence.indexOf("[POSP]");
-			}
-			if (endOffset == -1 || endOffset < startOffset) {
-				endOffset = sentence.length() - 1;
-			}
-			sScope = sentence.substring(startOffset, endOffset + 1);
-		}
-
-		// Get the scope of the negation for POST and POSP
-		if (sentence.contains("[POST]") || sentence.contains("[POSP]")) {
-			int endOffset = sentence.lastIndexOf("[POST]");
-			if (endOffset == -1) {
-				endOffset = sentence.lastIndexOf("[POSP]");
-			}
-
-			int startOffset = sentence.lastIndexOf("[CONJ]");
-			if (startOffset == -1) {
-				startOffset = sentence.lastIndexOf("[PSEU]");
-			}
-			if (startOffset == -1) {
-				startOffset = sentence.lastIndexOf("[PREN]");
-			}
-			if (startOffset == -1) {
-				startOffset = sentence.lastIndexOf("[PREP]");
-			}
-			if (startOffset == -1) {
-				startOffset = 0;
-			}
-			sScope = sentence.substring(startOffset, endOffset);
-		}
-
-		// Classify to: negated/possible/affirmed
-		if (sentence.contains("[NEGATED]")) {
-			sentence = sentence + "\t" + "negated" + "\t" + sScope;
-		} else if (sentence.contains("[POSSIBLE]")) {
-			sentence = sentence + "\t" + "possible" + "\t" + sScope;
-		} else {
-			sentence = sentence + "\t" + "affirmed" + "\t" + sScope;
-		}
-
-		sToReturn = sentence;
-		System.out.println(sToReturn);
+		log.debug("Rules tried: " + count);
 	}
 
 	/**
@@ -843,7 +763,10 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 			}
 		}
 		ContextAnnotation nec = new ContextAnnotation(aJCas);
-		nec.setBegin(s.getBegin() + t.getStart() - 1);
+		// There is a bug way back in UIMA source which occasionally
+		// returns a begin of -1 when certain POS types begin a sentence.
+		int begin = Math.max(0, (s.getBegin() + t.getStart() - 1));
+		nec.setBegin(begin);
 		nec.setEnd(s.getBegin() + t.getEnd() - 1);
 		nec.setScope(t.getTag());
 		nec.setFocusText(anno.getCoveredText());

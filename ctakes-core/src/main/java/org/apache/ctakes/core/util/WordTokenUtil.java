@@ -2,7 +2,6 @@ package org.apache.ctakes.core.util;
 
 
 import org.apache.ctakes.typesystem.type.syntax.WordToken;
-import org.apache.log4j.Logger;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -10,13 +9,11 @@ import javax.annotation.concurrent.Immutable;
  * @author SPF , chip-nlp
  * @version %I%
  * @since 9/16/2015
+ * @deprecated use WordTokenUtil in (sub) package annotation.
  */
 @Immutable
+@Deprecated
 final public class WordTokenUtil {
-
-   static private final Logger LOGGER = Logger.getLogger( "WordTokenUtil" );
-
-   static private final String MISSING_WORDTOKEN_TEXT = "MISSING_WORDTOKEN_TEXT";
 
    private WordTokenUtil() {
    }
@@ -27,18 +24,11 @@ final public class WordTokenUtil {
     * In order to prevent NPEs, this method checks for null values of canonical form and covered text
     *
     * @param wordToken of interest
-    * @return The first non-null of the word token's canonical form, covered text or {@link #MISSING_WORDTOKEN_TEXT}.
+    * @return The first non-null of the word token's canonical form, covered text .
     */
+   @Deprecated
    static public String getCanonicalForm( final WordToken wordToken ) {
-      final String canonicalForm = wordToken.getCanonicalForm();
-      if ( canonicalForm != null && !canonicalForm.isEmpty() ) {
-         return canonicalForm;
-      }
-      final String coveredText = wordToken.getCoveredText();
-      if ( coveredText == null ) {
-         return MISSING_WORDTOKEN_TEXT;
-      }
-      return coveredText;
+      return org.apache.ctakes.core.util.annotation.WordTokenUtil.getCanonicalForm( wordToken );
    }
 
 

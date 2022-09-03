@@ -22,8 +22,8 @@ import findstruct.Section;
 import findstruct.StructFinder;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.resource.FileResource;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
 import org.apache.ctakes.core.util.DocumentSection;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
@@ -85,7 +85,7 @@ public class SectionSegmentAnnotator extends JCasAnnotator_ImplBase {
 		String text = jCas.getDocumentText();
 
 		if (text == null) {
-			String docId = DocumentIDAnnotationUtil.getDocumentID(jCas);
+         String docId = DocIdUtil.getDocumentID( jCas );
 			throw new AnalysisEngineProcessException("text is null for docId="
 					+ docId, null);
 		}

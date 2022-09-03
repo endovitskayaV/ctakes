@@ -1,13 +1,6 @@
 package org.apache.ctakes.core.ae;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
-
+import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.resource.FileLocator;
 import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.ctakes.typesystem.type.textspan.Sentence;
@@ -34,6 +27,10 @@ import org.cleartk.ml.jar.DirectoryDataWriterFactory;
 import org.cleartk.ml.jar.GenericJarClassifierFactory;
 import org.cleartk.util.ViewUriUtil;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+
 
 /**
  * Prose sentence detector.
@@ -51,6 +48,14 @@ import org.cleartk.util.ViewUriUtil;
  * @see org.apache.ctakes.core.ae.ParagraphSentenceFixer
  * @see org.apache.ctakes.core.ae.SentenceDetector
  */
+@PipeBitInfo(
+      name = "Prose Sentence Detector",
+      description = "Sentence detector that uses B I O for determination.  " +
+                    "Useful for documents in which newlines may not indicate sentence boundaries.",
+      role = PipeBitInfo.Role.ANNOTATOR,
+      dependencies = PipeBitInfo.TypeProduct.SECTION,
+      products = PipeBitInfo.TypeProduct.SENTENCE
+)
 public class SentenceDetectorAnnotatorBIO extends CleartkAnnotator<String>{
 
   private Logger logger = Logger.getLogger(SentenceDetectorAnnotatorBIO.class);

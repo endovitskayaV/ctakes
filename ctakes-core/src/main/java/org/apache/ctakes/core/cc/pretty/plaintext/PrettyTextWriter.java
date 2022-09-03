@@ -4,8 +4,8 @@ import org.apache.ctakes.core.cc.pretty.SemanticGroup;
 import org.apache.ctakes.core.cc.pretty.cell.*;
 import org.apache.ctakes.core.cc.pretty.row.DefaultItemRow;
 import org.apache.ctakes.core.cc.pretty.row.ItemRow;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.core.util.textspan.DefaultTextSpan;
 import org.apache.ctakes.core.util.textspan.TextSpan;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
@@ -78,7 +78,7 @@ final public class PrettyTextWriter {
     */
    public void process( final JCas jcas ) {
       LOGGER.info( "Starting processing" );
-      final String docId = DocumentIDAnnotationUtil.getDocumentIdForFile( jcas );
+      final String docId = DocIdUtil.getDocumentIdForFile( jcas );
       File outputFile;
       if ( _outputDirPath == null || _outputDirPath.isEmpty() ) {
          outputFile = new File( docId + FILE_EXTENSION );

@@ -19,6 +19,7 @@ package org.apache.ctakes.core.util;
  * under the License.
  */
 
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.component.initialize.ConfigurationParameterInitializer;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -54,7 +55,7 @@ public class CtakesFileNamer implements Initializable {
    int i = 1;
 
    public String nameFile( JCas jcas ) {
-      String sourceFileName = DocumentIDAnnotationUtil.getDocumentID( jcas );
+      String sourceFileName = DocIdUtil.getDocumentID( jcas );
       StringBuilder b = new StringBuilder();
       if ( prefix != null && !prefix.isEmpty() ) {
          b.append( prefix );
@@ -62,7 +63,7 @@ public class CtakesFileNamer implements Initializable {
 
       if ( sourceFileName != null
            && !sourceFileName.isEmpty()
-           && !sourceFileName.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+           && !sourceFileName.equals( DocIdUtil.NO_DOCUMENT_ID ) ) {
          b.append( sourceFileName );
       } else {
          b.append( i++ );

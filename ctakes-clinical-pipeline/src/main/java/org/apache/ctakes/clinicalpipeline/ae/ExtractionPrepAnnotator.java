@@ -19,7 +19,7 @@
 package org.apache.ctakes.clinicalpipeline.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.WordTokenUtil;
+import org.apache.ctakes.core.util.annotation.WordTokenUtil;
 import org.apache.ctakes.typesystem.type.refsem.OntologyConcept;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.ctakes.typesystem.type.syntax.WordToken;

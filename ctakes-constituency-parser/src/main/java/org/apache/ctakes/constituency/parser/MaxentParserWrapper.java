@@ -23,7 +23,7 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.parser.chunking.Parser;
 import org.apache.ctakes.constituency.parser.util.TreeUtils;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.ctakes.typesystem.type.syntax.TopTreebankNode;
 import org.apache.ctakes.typesystem.type.textspan.Sentence;
@@ -45,9 +45,13 @@ public class MaxentParserWrapper implements ParserWrapper {
 	Parser parser = null;
 	private String parseStr = "";
 	Logger logger = Logger.getLogger(this.getClass().getName());
+    private int maxTokens;
 
+	public MaxentParserWrapper(InputStream in){
+	    this(in, -1);
+    }
 
-	public MaxentParserWrapper(InputStream is){
+	public MaxentParserWrapper(InputStream is, int maxTokens){
 		try {
 			if (is!=null) {
 				ParserModel model = new ParserModel(is);
@@ -56,6 +60,7 @@ public class MaxentParserWrapper implements ParserWrapper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		this.maxTokens = maxTokens;
 	}
 
 	@Override
@@ -72,7 +77,7 @@ public class MaxentParserWrapper implements ParserWrapper {
 	 */
 	@Override
    public void createAnnotations( final JCas jcas ) throws AnalysisEngineProcessException {
-      final String docId = DocumentIDAnnotationUtil.getDocumentID( jcas );
+      final String docId = DocIdUtil.getDocumentID( jcas );
       logger.info( "Started processing: " + docId );
       // iterate over sentences
 		Parse parse = null;
@@ -87,6 +92,7 @@ public class MaxentParserWrapper implements ParserWrapper {
          }
 //         final FSArray terminalArray = TreeUtils.getTerminals( jcas, sentence );
          final FSArray terminalArray = TreeUtils.getTerminals( jcas, new ArrayList<>( sentenceTokens.getValue() ) );
+         if(this.maxTokens > 0 && terminalArray.size() > this.maxTokens) continue;
          final String tokenString = TreeUtils.getSplitSentence( terminalArray );
          if ( tokenString.isEmpty() ) {
             parse = null;

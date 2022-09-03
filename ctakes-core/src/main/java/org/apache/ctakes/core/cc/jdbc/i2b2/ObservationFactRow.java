@@ -2,7 +2,7 @@ package org.apache.ctakes.core.cc.jdbc.i2b2;
 
 import org.apache.ctakes.core.cc.jdbc.field.*;
 import org.apache.ctakes.core.cc.jdbc.row.JdbcRow;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
 import org.apache.ctakes.typesystem.type.structured.SourceData;

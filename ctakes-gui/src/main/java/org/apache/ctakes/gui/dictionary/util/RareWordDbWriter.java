@@ -1,7 +1,7 @@
 package org.apache.ctakes.gui.dictionary.util;
 
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.gui.dictionary.umls.Concept;
-import org.apache.ctakes.gui.dictionary.umls.Tui;
 import org.apache.ctakes.gui.dictionary.umls.VocabularyStore;
 import org.apache.log4j.Logger;
 
@@ -92,9 +92,9 @@ final public class RareWordDbWriter {
                continue;
             }
             // write tui table
-            for ( Tui tui : concept.getTuis() ) {
+            for ( SemanticTui tui : concept.getTuis() ) {
                tuiStatement.setLong( CuiTermsField.CUI.__index, cui );
-               tuiStatement.setInt( 2, tui.getIntValue() );
+               tuiStatement.setInt( 2, tui.getCode() );
                tuiStatement.executeUpdate();
                tuiTableCount = incrementCount( "Tui", tuiTableCount );
             }
@@ -114,13 +114,16 @@ final public class RareWordDbWriter {
             // write extra vocabulary code tables
             final Collection<String> vocabularies = concept.getVocabularies();
             for ( String vocabulary : vocabularies ) {
-               final PreparedStatement statement = codeStatements.get( vocabulary );
+               final String fixed = fixVocabName.apply( vocabulary );
+//               final PreparedStatement statement = codeStatements.get( vocabulary );
+               final PreparedStatement statement = codeStatements.get( fixed );
                statement.setLong( CuiTermsField.CUI.__index, cui );
                for ( String code : concept.getCodes( vocabulary ) ) {
                   setCodeAppropriately( statement, code, VocabularyStore.getInstance()
-                        .getVocabularyClass( vocabulary ) );
+                                                                        .getVocabularyClass( vocabulary ) );
                   statement.executeUpdate();
-                  codeTableCounts.put( vocabulary, incrementCount( vocabulary, codeTableCounts.get( vocabulary ) ) );
+//                  codeTableCounts.put( vocabulary, incrementCount( vocabulary, codeTableCounts.get( vocabulary ) ) );
+                  codeTableCounts.put( fixed, incrementCount( fixed, codeTableCounts.get( fixed ) ) );
                }
             }
          }

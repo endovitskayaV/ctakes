@@ -20,7 +20,7 @@ package org.apache.ctakes.temporal.ae;
 
 import com.google.common.collect.Lists;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DotLogger;
+import org.apache.ctakes.core.util.log.DotLogger;
 import org.apache.ctakes.temporal.ae.feature.ParseSpanFeatureExtractor;
 import org.apache.ctakes.temporal.ae.feature.TimeWordTypeExtractor;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;

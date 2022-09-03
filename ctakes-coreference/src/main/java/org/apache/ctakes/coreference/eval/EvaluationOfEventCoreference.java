@@ -16,7 +16,7 @@ import org.apache.ctakes.core.patient.PatientNoteStore;
 import org.apache.ctakes.core.patient.PatientViewUtil;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.coreference.ae.*;
 import org.apache.ctakes.coreference.factory.CoreferenceAnnotatorFactory;
 import org.apache.ctakes.dependency.parser.util.DependencyUtility;
@@ -26,7 +26,10 @@ import org.apache.ctakes.temporal.ae.DocTimeRelAnnotator;
 import org.apache.ctakes.temporal.ae.EventAnnotator;
 import org.apache.ctakes.temporal.eval.EvaluationOfEventTimeRelations.ParameterSettings;
 import org.apache.ctakes.temporal.eval.EvaluationOfTemporalRelations_ImplBase;
-import org.apache.ctakes.typesystem.type.relation.*;
+import org.apache.ctakes.typesystem.type.relation.BinaryTextRelation;
+import org.apache.ctakes.typesystem.type.relation.CollectionTextRelation;
+import org.apache.ctakes.typesystem.type.relation.CoreferenceRelation;
+import org.apache.ctakes.typesystem.type.relation.LocationOfTextRelation;
 import org.apache.ctakes.typesystem.type.structured.DocumentID;
 import org.apache.ctakes.typesystem.type.structured.DocumentIdPrefix;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
@@ -508,8 +511,8 @@ public class EvaluationOfEventCoreference extends EvaluationOfTemporalRelations_
     static Logger logger = Logger.getLogger(DocumentIDPrinter.class);
     @Override
     public void process(JCas jCas) throws AnalysisEngineProcessException {
-      String docId = DocumentIDAnnotationUtil.getDocumentID(jCas);
-      if(docId.startsWith(DocumentIDAnnotationUtil.NO_DOCUMENT_ID)){
+       String docId = DocIdUtil.getDocumentID( jCas );
+       if ( docId.startsWith( DocIdUtil.NO_DOCUMENT_ID ) ) {
         docId = new File(ViewUriUtil.getURI(jCas)).getName();
       }
       logger.info(String.format("Processing %s\n", docId));

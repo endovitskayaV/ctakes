@@ -44,7 +44,11 @@ final public class PiperRunnerGui {
    public static void main( final String... args ) {
       try {
          UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-         UIManager.getDefaults().put( "SplitPane.border", BorderFactory.createEmptyBorder() );
+         UIManager.getDefaults()
+                  .put( "SplitPane.border", BorderFactory.createEmptyBorder() );
+         // Needed for MacOS, which sets gridlines to white by default
+         UIManager.getDefaults()
+                  .put( "Table.gridColor", Color.GRAY );
       } catch ( ClassNotFoundException | InstantiationException
             | IllegalAccessException | UnsupportedLookAndFeelException multE ) {
          LOGGER.error( multE.getLocalizedMessage() );

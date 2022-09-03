@@ -1,9 +1,8 @@
 package org.apache.ctakes.core.pipeline;
 
 
-import org.apache.ctakes.core.cc.XmiWriterCasConsumerCtakes;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.DotLogger;
+import org.apache.ctakes.core.util.log.DotLogger;
 import org.apache.log4j.Logger;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -33,7 +32,7 @@ import java.util.regex.Pattern;
  * collectEntities
  * writeXmis <i>output_directory</i>
  *    <i>output_directory</i> can be empty if
- *    {@link XmiWriterCasConsumerCtakes#PARAM_OUTPUTDIR} ("OutputDirectory") was specified
+ *    ("OutputDirectory") was specified
  * // and # and ! may be used to mark line comments
  * </p>
  * class names must be fully-specified with package unless they are in standard ctakes cr ae or cc packages,
@@ -159,7 +158,8 @@ final public class PiperFileReader {
          case "load":
             return loadPipelineFile( info );
          case "package":
-            PipeBitLocator.getInstance().addUserPackage( info );
+            PipeBitLocator.getInstance()
+                          .addUserPackage( info );
             return true;
          case "set":
             _builder.set( splitParameters( info ) );
@@ -167,14 +167,19 @@ final public class PiperFileReader {
          case "cli":
             _builder.setIfEmpty( getCliParameters( info ) );
             return true;
+         case "env":
+            _builder.env( splitParameters( info ) );
+            return true;
          case "reader":
             if ( hasParameters( info ) ) {
                final String[] component_parameters = splitFromParameters( info );
                final String component = component_parameters[ 0 ];
                final Object[] parameters = splitParameters( component_parameters[ 1 ] );
-               _builder.reader( PipeBitLocator.getInstance().getReaderClass( component ), parameters );
+               _builder.reader( PipeBitLocator.getInstance()
+                                              .getReaderClass( component ), parameters );
             } else {
-               _builder.reader( PipeBitLocator.getInstance().getReaderClass( info ) );
+               _builder.reader( PipeBitLocator.getInstance()
+                                              .getReaderClass( info ) );
             }
             return true;
          case "readFiles":

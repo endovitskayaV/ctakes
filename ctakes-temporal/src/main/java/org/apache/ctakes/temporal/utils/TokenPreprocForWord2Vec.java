@@ -17,10 +17,10 @@ public class TokenPreprocForWord2Vec {
       stringValue = tokenText;
       break;
     case "NewlineToken":
-      stringValue = null;
+      stringValue = " newline ";//changed by Chen on 1/10/2019
       break;
     case "NumToken":
-      stringValue = "number_token";
+      stringValue = tokenText; //"number_token"; changed by Chen on 2/21/2019
       break;
     case "PunctuationToken":
       stringValue = tokenText;

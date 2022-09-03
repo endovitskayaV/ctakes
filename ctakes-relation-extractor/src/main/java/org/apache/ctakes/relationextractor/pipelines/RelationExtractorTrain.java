@@ -94,8 +94,8 @@ public class RelationExtractorTrain {
           + preprocessDescFile.getCanonicalPath());
     }
 
-    List<File> trainFiles = SHARPXMI.getAllTextFiles(options.getBatchesDirectory());
-    trainFiles = SHARPXMI.toXMIFiles(options, trainFiles);
+    List<File> trainFiles = SHARPXMI.getAllTextFiles(options.getSharpBatchesDirectory());
+    trainFiles = SHARPXMI.toXMIFiles(options.getXMIDirectory(), trainFiles);
 
     // Initialize model directories
     String modelPathPrefix = "org/apache/ctakes/relationextractor/models/";

@@ -18,34 +18,14 @@
  */
 package org.apache.ctakes.coreference.cc;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Scanner;
-
 import libsvm.svm_node;
-
 import org.apache.ctakes.constituency.parser.treekernel.TreeExtractor;
 import org.apache.ctakes.constituency.parser.util.TreeUtils;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.coreference.type.BooleanLabeledFS;
-import org.apache.ctakes.coreference.type.DemMarkable;
-import org.apache.ctakes.coreference.type.Markable;
-import org.apache.ctakes.coreference.type.MarkablePairSet;
-import org.apache.ctakes.coreference.type.NEMarkable;
-import org.apache.ctakes.coreference.util.CorefConsts;
-import org.apache.ctakes.coreference.util.FSIteratorToList;
-import org.apache.ctakes.coreference.util.GoldStandardLabeler;
-import org.apache.ctakes.coreference.util.MarkableTreeUtils;
-import org.apache.ctakes.coreference.util.PairAttributeCalculator;
-import org.apache.ctakes.coreference.util.SvmVectorCreator;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
+import org.apache.ctakes.coreference.type.*;
+import org.apache.ctakes.coreference.util.*;
 import org.apache.ctakes.relationextractor.eval.XMIReader;
 import org.apache.ctakes.typesystem.type.syntax.TreebankNode;
 import org.apache.ctakes.utils.tree.SimpleTree;
@@ -56,15 +36,19 @@ import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.FSIterator;
 import org.apache.uima.collection.CollectionReader;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
+import org.apache.uima.fit.factory.CollectionReaderFactory;
+import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.cas.NonEmptyFSList;
 import org.apache.uima.jcas.tcas.Annotation;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
-import org.apache.uima.fit.factory.AnalysisEngineFactory;
-import org.apache.uima.fit.factory.CollectionReaderFactory;
-import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
-import org.apache.uima.fit.pipeline.SimplePipeline;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 @PipeBitInfo(
 		name = "ODIE Vector File Writer",
@@ -211,7 +195,7 @@ public class ODIEVectorFileWriter extends JCasAnnotator_ImplBase {
 //			return;
 //		}
 
-		String docId = DocumentIDAnnotationUtil.getDocumentID(jcas);
+      String docId = DocIdUtil.getDocumentID( jcas );
 		docId = docId.substring(docId.lastIndexOf('/')+1, docId.length());
 //		Hashtable<Integer, Integer> sysId2AlignId = new Hashtable<Integer, Integer>();
 //		Hashtable<Integer, Integer> goldId2AlignId = new Hashtable<Integer, Integer>();

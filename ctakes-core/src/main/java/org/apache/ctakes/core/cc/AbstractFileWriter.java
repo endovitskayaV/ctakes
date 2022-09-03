@@ -2,7 +2,7 @@ package org.apache.ctakes.core.cc;
 
 
 import org.apache.ctakes.core.config.ConfigParameterConstants;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.structured.DocumentIdPrefix;
 import org.apache.ctakes.typesystem.type.structured.DocumentPath;
 import org.apache.log4j.Logger;
@@ -68,7 +68,7 @@ abstract public class AbstractFileWriter<T> extends JCasAnnotator_ImplBase {
     */
    @Override
    public void process( final JCas jcas ) throws AnalysisEngineProcessException {
-      final String documentId = DocumentIDAnnotationUtil.getDocumentIdForFile( jcas );
+      final String documentId = DocIdUtil.getDocumentIdForFile( jcas );
       final String outputDir = getOutputDirectory( jcas, getRootDirectory(), documentId );
       final String fileName = getSourceFileName( jcas, documentId );
       try {

@@ -1,6 +1,6 @@
 package org.apache.ctakes.core.cc.pretty;
 
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
 import org.apache.ctakes.typesystem.type.textsem.EntityMention;
 import org.apache.ctakes.typesystem.type.textsem.EventMention;

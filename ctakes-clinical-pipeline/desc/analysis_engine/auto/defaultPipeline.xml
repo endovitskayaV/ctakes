@@ -2442,6 +2442,7 @@ More qualifying information on how the procedure was done.</description>
                                                     <description/>
                                                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                     <elementType>uima.tcas.Annotation</elementType>
+                                                   <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                                 </featureDescription>
                                             </features>
                                         </typeDescription>
@@ -4963,7 +4964,8 @@ More qualifying information on how the procedure was done.</description>
                                                     <description/>
                                                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                     <elementType>uima.tcas.Annotation</elementType>
-                                                </featureDescription>
+                                                    <multipleReferencesAllowed>true</multipleReferencesAllowed>
+                                  </featureDescription>
                                             </features>
                                         </typeDescription>
                                         <typeDescription>
@@ -7506,6 +7508,7 @@ More qualifying information on how the procedure was done.</description>
                                                                 <description/>
                                                                 <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                                 <elementType>uima.tcas.Annotation</elementType>
+                                                                 <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                                             </featureDescription>
                                                         </features>
                                                     </typeDescription>
@@ -10043,6 +10046,7 @@ More qualifying information on how the procedure was done.</description>
                                                                 <description/>
                                                                 <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                                 <elementType>uima.tcas.Annotation</elementType>
+                                                                 <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                                             </featureDescription>
                                                         </features>
                                                     </typeDescription>
@@ -12569,6 +12573,7 @@ More qualifying information on how the procedure was done.</description>
                                                     <description/>
                                                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                     <elementType>uima.tcas.Annotation</elementType>
+                                                    <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                                 </featureDescription>
                                             </features>
                                         </typeDescription>
@@ -15103,6 +15108,7 @@ More qualifying information on how the procedure was done.</description>
                                                     <description/>
                                                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                     <elementType>uima.tcas.Annotation</elementType>
+                                                    <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                                 </featureDescription>
                                             </features>
                                         </typeDescription>
@@ -17631,6 +17637,7 @@ More qualifying information on how the procedure was done.</description>
                                                     <description/>
                                                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                     <elementType>uima.tcas.Annotation</elementType>
+                                                   <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                                 </featureDescription>
                                             </features>
                                         </typeDescription>
@@ -20270,7 +20277,8 @@ More qualifying information on how the procedure was done.</description>
                                                     <description/>
                                                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                     <elementType>uima.tcas.Annotation</elementType>
-                                                </featureDescription>
+                                                   <multipleReferencesAllowed>true</multipleReferencesAllowed>
+                                               </featureDescription>
                                             </features>
                                         </typeDescription>
                                         <typeDescription>
@@ -22822,6 +22830,7 @@ More qualifying information on how the procedure was done.</description>
                                                     <description/>
                                                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                                     <elementType>uima.tcas.Annotation</elementType>
+                                                   <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                                 </featureDescription>
                                             </features>
                                         </typeDescription>
@@ -25354,6 +25363,7 @@ More qualifying information on how the procedure was done.</description>
                                         <description/>
                                         <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                         <elementType>uima.tcas.Annotation</elementType>
+                                       <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                     </featureDescription>
                                 </features>
                             </typeDescription>
@@ -27968,6 +27978,7 @@ More qualifying information on how the procedure was done.</description>
                                         <description/>
                                         <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                         <elementType>uima.tcas.Annotation</elementType>
+                                         <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                     </featureDescription>
                                 </features>
                             </typeDescription>
@@ -30500,6 +30511,7 @@ More qualifying information on how the procedure was done.</description>
                                         <description/>
                                         <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                         <elementType>uima.tcas.Annotation</elementType>
+                                        <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                     </featureDescription>
                                 </features>
                             </typeDescription>
@@ -33187,7 +33199,8 @@ More qualifying information on how the procedure was done.</description>
                                         <description/>
                                         <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                         <elementType>uima.tcas.Annotation</elementType>
-                                    </featureDescription>
+                                       <multipleReferencesAllowed>true</multipleReferencesAllowed>
+                                     </featureDescription>
                                 </features>
                             </typeDescription>
                             <typeDescription>
@@ -35705,6 +35718,7 @@ More qualifying information on how the procedure was done.</description>
                                         <description/>
                                         <rangeTypeName>uima.cas.FSList</rangeTypeName>
                                         <elementType>uima.tcas.Annotation</elementType>
+                                        <multipleReferencesAllowed>true</multipleReferencesAllowed>
                                     </featureDescription>
                                 </features>
                             </typeDescription>

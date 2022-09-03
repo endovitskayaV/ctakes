@@ -18,15 +18,21 @@ final public class SourceTableModel implements TableModel {
 
    static private final Logger LOGGER = Logger.getLogger( "SourceTableModel" );
 
-   static private final String[] COLUMN_NAMES = { "Source", "Target", "Vocabulary" };
-   static private final Class<?>[] COLUMN_CLASSES = { Boolean.class, Boolean.class, String.class };
+   static private final String[] COLUMN_NAMES = { "Read Synonyms", "Record Codes", "Code", "Vocabulary", "Version",
+                                                  "CUIs" };
+   static private final Class<?>[] COLUMN_CLASSES = { Boolean.class, Boolean.class, String.class, String.class,
+                                                      String.class, String.class };
 
-   static private final String[] CTAKES_SOURCES = { "SNOMEDCT_US", "RXNORM" };
+   static private final String[] CTAKES_SOURCES = { "SNOMEDCT_US", "RXNORM", "MTH", "MSH", "LNC", "CHV", "HPO" };
+   static private final String[] CTAKES_TARGETS = { "SNOMEDCT_US", "RXNORM" };
 
    private final EventListenerList _listenerList = new EventListenerList();
    private final Collection<String> _wantedSources = new HashSet<>();
    private final Collection<String> _wantedTargets = new HashSet<>();
    private final List<String> _sources = new ArrayList<>();
+   private final Map<String, String> _sourceNames = new HashMap<>();
+   private final Map<String, String> _sourceVersions = new HashMap<>();
+   private final Map<String, String> _sourceCuiCounts = new HashMap<>();
 
 
    public void setSources( final Collection<String> sources ) {
@@ -36,7 +42,19 @@ final public class SourceTableModel implements TableModel {
       _sources.addAll( sources );
       Collections.sort( _sources );
       _wantedSources.addAll( Arrays.asList( CTAKES_SOURCES ) );
-      _wantedTargets.addAll( Arrays.asList( CTAKES_SOURCES ) );
+      _wantedTargets.addAll( Arrays.asList( CTAKES_TARGETS ) );
+      fireTableChanged( new TableModelEvent( this ) );
+   }
+
+   public void setSourceInfo( final Map<String, String> sourceNames,
+                              final Map<String, String> sourceVersions,
+                              final Map<String, String> sourceCuiCounts ) {
+      _sourceNames.clear();
+      _sourceVersions.clear();
+      _sourceCuiCounts.clear();
+      _sourceNames.putAll( sourceNames );
+      _sourceVersions.putAll( sourceVersions );
+      _sourceCuiCounts.putAll( sourceCuiCounts );
       fireTableChanged( new TableModelEvent( this ) );
    }
 
@@ -61,7 +79,7 @@ final public class SourceTableModel implements TableModel {
     */
    @Override
    public int getColumnCount() {
-      return 3;
+      return 6;
    }
 
    /**
@@ -101,6 +119,12 @@ final public class SourceTableModel implements TableModel {
             return isTargetEnabled( source );
          case 2:
             return source;
+         case 3:
+            return _sourceNames.getOrDefault( source, "" );
+         case 4:
+            return _sourceVersions.getOrDefault( source, "" );
+         case 5:
+            return _sourceCuiCounts.getOrDefault( source, "" );
       }
       return "ERROR";
    }

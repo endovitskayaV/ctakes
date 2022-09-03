@@ -44,6 +44,11 @@ public enum ProgressManager {
       _model.setValue( value );
    }
 
+   public void updateProgress( final int value, final int max ) {
+      _model.setMaximum( max );
+      updateProgress( value );
+   }
+
    public BoundedRangeModel getModel() {
       return _model;
    }

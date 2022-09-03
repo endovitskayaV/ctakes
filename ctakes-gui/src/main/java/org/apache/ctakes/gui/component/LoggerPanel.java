@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -42,6 +43,7 @@ final public class LoggerPanel extends JScrollPane {
       final JTextArea textArea = new JTextArea( _textAreaDoc );
       textArea.setEditable( false );
       textArea.setEnabled( false );
+      textArea.setDisabledTextColor( Color.DARK_GRAY );
       super.setViewportView( textArea );
       _appender = new LogHandler( levels );
    }

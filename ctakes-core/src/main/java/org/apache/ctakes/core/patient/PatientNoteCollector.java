@@ -31,8 +31,8 @@ final public class PatientNoteCollector extends JCasAnnotator_ImplBase {
     */
    @Override
    public void process( final JCas jCas ) throws AnalysisEngineProcessException {
-      LOGGER.info( "Caching Document " + PatientNoteStore.getInstance().getDefaultDocumentId( jCas )
-            + " into Patient " + PatientNoteStore.getInstance().getDefaultPatientId( jCas ) + " ..." );
+      LOGGER.info( "Caching Document " + PatientNoteStore.getDefaultDocumentId( jCas )
+                   + " into Patient " + PatientNoteStore.getDefaultPatientId( jCas ) + " ..." );
 
       PatientNoteStore.getInstance().storeAllViews( jCas );
 

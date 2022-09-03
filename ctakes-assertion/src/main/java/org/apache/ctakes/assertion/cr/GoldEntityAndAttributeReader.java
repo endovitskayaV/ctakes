@@ -18,32 +18,30 @@
  */
 package org.apache.ctakes.assertion.cr;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
+import org.apache.ctakes.core.util.Mapper;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
+import org.apache.ctakes.typesystem.type.constants.CONST;
+import org.apache.ctakes.typesystem.type.textsem.EntityMention;
+import org.apache.ctakes.typesystem.type.textsem.EventMention;
+import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
+import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 
-import org.apache.ctakes.typesystem.type.constants.CONST;
-import org.apache.ctakes.typesystem.type.textsem.EntityMention;
-import org.apache.ctakes.typesystem.type.textsem.EventMention;
-import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.Mapper;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Read named entity annotations from knowtator xml files into the CAS
@@ -83,8 +81,8 @@ public class GoldEntityAndAttributeReader extends JCasAnnotator_ImplBase {
         initView = jCas.getView(CAS.NAME_DEFAULT_SOFA);
       } catch (CASException e) {
         throw new AnalysisEngineProcessException(e);
-      } 
-			String goldFilePath = inputDirectory + DocumentIDAnnotationUtil.getDocumentID(jCas) + ".knowtator.xml";
+      }
+      String goldFilePath = inputDirectory + DocIdUtil.getDocumentID( jCas ) + ".knowtator.xml";
 			
       SAXBuilder builder = new SAXBuilder();
       Document document;

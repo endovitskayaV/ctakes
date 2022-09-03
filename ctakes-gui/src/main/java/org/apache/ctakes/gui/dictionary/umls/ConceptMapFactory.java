@@ -1,6 +1,7 @@
 package org.apache.ctakes.gui.dictionary.umls;
 
 
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.log4j.Logger;
 
 import java.util.Collection;
@@ -21,7 +22,7 @@ final public class ConceptMapFactory {
 
    static public Map<Long, Concept> createInitialConceptMap( final String umlsDirPath,
                                                              final Collection<String> wantedSources,
-                                                             final Collection<Tui> wantedTuis ) {
+                                                             final Collection<SemanticTui> wantedTuis ) {
       if ( wantedSources.isEmpty() ) {
          LOGGER.warn( "No source vocabularies specified" );
          return Collections.emptyMap();

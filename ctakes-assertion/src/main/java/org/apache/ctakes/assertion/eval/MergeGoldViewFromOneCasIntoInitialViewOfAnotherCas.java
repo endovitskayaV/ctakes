@@ -18,16 +18,9 @@
  */
 package org.apache.ctakes.assertion.eval;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.ctakes.assertion.util.AssertionConst;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.textsem.EntityMention;
 import org.apache.ctakes.typesystem.type.textsem.EventMention;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
@@ -39,12 +32,6 @@ import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CollectionReader;
-import org.apache.uima.jcas.JCas;
-import org.apache.uima.jcas.tcas.Annotation;
-import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.metadata.ResourceMetaData;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
-import org.apache.uima.util.CasCreationUtils;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.component.NoOpAnnotator;
 import org.apache.uima.fit.component.ViewCreatorAnnotator;
@@ -53,10 +40,22 @@ import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.util.JCasUtil;
+import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.tcas.Annotation;
+import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.metadata.ResourceMetaData;
+import org.apache.uima.resource.metadata.TypeSystemDescription;
+import org.apache.uima.util.CasCreationUtils;
 
-import static org.apache.ctakes.core.pipeline.PipeBitInfo.TypeProduct.*;
-import static org.apache.ctakes.core.pipeline.PipeBitInfo.TypeProduct.COREFERENCE_RELATION;
-import static org.apache.ctakes.core.pipeline.PipeBitInfo.TypeProduct.MARKABLE;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.apache.ctakes.core.pipeline.PipeBitInfo.TypeProduct.DOCUMENT_ID;
+import static org.apache.ctakes.core.pipeline.PipeBitInfo.TypeProduct.IDENTIFIED_ANNOTATION;
 
 /**
  * 
@@ -99,8 +98,8 @@ public class MergeGoldViewFromOneCasIntoInitialViewOfAnotherCas extends JCasAnno
 		
 		if (!goldViewDir.exists()) throw new AnalysisEngineProcessException(new RuntimeException("Directory with gold view annotations not found:" + dirWithGoldViews));
 		if (!goldViewDir.isDirectory()) throw new AnalysisEngineProcessException(new RuntimeException("What is supposed to be a directory with gold view annotations is not a directory:" + dirWithGoldViews));
-		
-		String docId = DocumentIDAnnotationUtil.getDocumentID(jCas);
+
+      String docId = DocIdUtil.getDocumentID( jCas );
 		JCas correspondingCasThatHasGoldAnnotations = getCorrespondingCasThatHasGoldAnnotations(docId);
 		JCas viewWithPreexistingGoldAnnotations = null;
 		JCas newGoldView = null;

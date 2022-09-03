@@ -18,17 +18,51 @@
  */
 package org.apache.ctakes.relationextractor.eval;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.ctakes.relationextractor.ae.CausesBringsAboutRelationExtractorAnnotator;
+import org.apache.ctakes.relationextractor.ae.DegreeOfRelationExtractorAnnotator;
+import org.apache.ctakes.relationextractor.ae.LocationOfRelationExtractorAnnotator;
+import org.apache.ctakes.relationextractor.ae.ManagesTreatsRelationExtractorAnnotator;
+import org.apache.ctakes.relationextractor.ae.ManifestationOfRelationExtractorAnnotator;
+import org.apache.ctakes.relationextractor.ae.RelationExtractorAnnotator;
+import org.apache.ctakes.typesystem.type.relation.BinaryTextRelation;
+import org.apache.ctakes.typesystem.type.relation.CausesBringsAboutTextRelation;
+import org.apache.ctakes.typesystem.type.relation.DegreeOfTextRelation;
+import org.apache.ctakes.typesystem.type.relation.LocationOfTextRelation;
+import org.apache.ctakes.typesystem.type.relation.ManagesTreatsTextRelation;
+import org.apache.ctakes.typesystem.type.relation.ManifestationOfTextRelation;
+import org.apache.ctakes.typesystem.type.relation.RelationArgument;
+import org.apache.ctakes.typesystem.type.textsem.AnatomicalSiteMention;
+import org.apache.ctakes.typesystem.type.textsem.EntityMention;
+import org.apache.ctakes.typesystem.type.textsem.EventMention;
+import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
+import org.apache.ctakes.typesystem.type.textsem.Modifier;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.Option;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.relationextractor.ae.*;
-import org.apache.ctakes.typesystem.type.relation.*;
-import org.apache.ctakes.typesystem.type.textsem.*;
 import org.apache.uima.UIMAFramework;
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -57,13 +91,11 @@ import org.cleartk.ml.jar.JarClassifierBuilder;
 import org.cleartk.ml.liblinear.LibLinearStringOutcomeDataWriter;
 import org.cleartk.util.ViewUriUtil;
 
-import javax.annotation.Nullable;
-import java.io.*;
-import java.util.*;
+public class RelationExtractorEvaluation extends RelationEvaluation_ImplBase {
 
-public class RelationExtractorEvaluation extends SHARPXMI.Evaluation_ImplBase {
 
-	public static interface Options extends SHARPXMI.EvaluationOptions {
+
+	public static interface Options extends RelationEvaluation_ImplBase.EvaluationOptions {
 
 		@Option(
 				longName = "relations",
@@ -104,6 +136,15 @@ public class RelationExtractorEvaluation extends SHARPXMI.Evaluation_ImplBase {
 				description = "expand events to their covering or covered events")
 		public boolean getExpandEvents();
 
+		@Option(
+				longName = "train-corpus",
+				description = "Corpora to use for training (space-separated if more than one)")
+		public List<CorpusXMI.Corpus> getTrainCorpus();
+
+		@Option(
+				longName = "test-corpus",
+				description = "Corpus to use for testing")
+		public CorpusXMI.Corpus getTestCorpus();
 	}
 
 	public static final Map<String, Class<? extends BinaryTextRelation>> RELATION_CLASSES =
@@ -158,55 +199,140 @@ public class RelationExtractorEvaluation extends SHARPXMI.Evaluation_ImplBase {
 	public static void main(String[] args) throws Exception {
 		// parse the options, validate them, and generate XMI if necessary
 		final Options options = CliFactory.parseArguments(Options.class, args);
-		SHARPXMI.validate(options);
-		SHARPXMI.generateXMI(options);
+		CorpusXMI.validate(options);
+		if(options.getGenerateXMI()) {
+			boolean generateSharp = false, generateDeepPhe = false;
+			if (options.getTestCorpus() == CorpusXMI.Corpus.SHARP || options.getTestCorpus() == CorpusXMI.Corpus.SHARP_RELEASE) {
+				generateSharp = true;
+			} else if (options.getTestCorpus() == CorpusXMI.Corpus.DeepPhe) {
+				generateDeepPhe = true;
+			}
+			for(CorpusXMI.Corpus corpus : options.getTrainCorpus()){
+				if(corpus == CorpusXMI.Corpus.SHARP_RELEASE || corpus == CorpusXMI.Corpus.SHARP){
+					generateSharp = true;
+				}else if(corpus == CorpusXMI.Corpus.DeepPhe){
+					generateDeepPhe = true;
+				}
+			}
+
+			if(generateSharp){
+				SHARPXMI.generateXMI(options.getXMIDirectory(), options.getSharpCorpusDirectory(), options.getSharpBatchesDirectory());
+			}
+			if(generateDeepPhe){
+				DeepPheXMI.generateXMI(options.getXMIDirectory(), options.getDeepPheAnaforaDirectory());
+			}
+		}
+
 
 		// determine the grid of parameters to search through
 		// for the full set of LibLinear parameters, see:
 		// https://github.com/bwaldvogel/liblinear-java/blob/master/src/main/java/de/bwaldvogel/liblinear/Train.java
-		List<ParameterSettings> gridOfSettings = Lists.newArrayList();
-		for (float probabilityOfKeepingANegativeExample : new float[] { 1.0f }) {//0.5f, 
-			for (int solver : new int[] { 0 /* logistic regression */, 1 /* SVM */}) {
-				for (double svmCost : new double[] { 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100 }) {
-					gridOfSettings.add(new ParameterSettings(
-							LibLinearStringOutcomeDataWriter.class,
-							new Object[] {
-									RelationExtractorAnnotator.PARAM_PROBABILITY_OF_KEEPING_A_NEGATIVE_EXAMPLE,
-									probabilityOfKeepingANegativeExample },
-							new String[] { "-s", String.valueOf(solver), "-c", String.valueOf(svmCost) }));
+		List<ParameterSettings> gridOfSettings = null;
+		if(options.getGridSearch()) {
+			gridOfSettings = new ArrayList<>();
+			for (float probabilityOfKeepingANegativeExample : new float[]{1.0f}) {//0.5f,
+				for (int solver : new int[]{0 /* logistic regression */, 1 /* SVM */}) {
+					for (double svmCost : new double[]{0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100}) {
+						gridOfSettings.add(new ParameterSettings(
+								LibLinearStringOutcomeDataWriter.class,
+								new Object[]{
+										RelationExtractorAnnotator.PARAM_PROBABILITY_OF_KEEPING_A_NEGATIVE_EXAMPLE,
+										probabilityOfKeepingANegativeExample},
+								new String[]{"-s", String.valueOf(solver), "-c", String.valueOf(svmCost)}));
+					}
 				}
 			}
 		}
 
 		// run an evaluation for each selected relation
 		for (final String relationCategory : options.getRelations()) {
-
 			// get the best parameters for the relation
 			final Class<? extends BinaryTextRelation> relationClass =
 					RELATION_CLASSES.get(relationCategory);
-			ParameterSettings bestSettings = BEST_PARAMETERS.get(relationClass);
 
-			// run the evaluation
-			SHARPXMI.evaluate(
-					options,
-					bestSettings,
-					gridOfSettings,
-					new Function<ParameterSettings, RelationExtractorEvaluation>() {
-						@Override
-						public RelationExtractorEvaluation apply(@Nullable ParameterSettings params) {
-							return new RelationExtractorEvaluation(
-									new File("target/models/" + relationCategory),
-									relationClass,
-									ANNOTATOR_CLASSES.get(relationClass),
-									params,
-									options.getTestOnCTakes(),
-									options.getAllowSmallerSystemArguments(),
-									options.getIgnoreImpossibleGoldRelations(),
-									options.getPrintErrors(),
-									options.getClassWeights(),
-									options.getExpandEvents());
-						}
-					});
+			List<File> trainFiles = new ArrayList<>();
+			for(CorpusXMI.Corpus corpus : options.getTrainCorpus()){
+				File trainCorpusDirectory;
+				if(corpus == CorpusXMI.Corpus.SHARP) trainCorpusDirectory = options.getSharpBatchesDirectory();
+				else if(corpus == CorpusXMI.Corpus.SHARP_RELEASE) trainCorpusDirectory = options.getSharpCorpusDirectory();
+				else if(corpus == CorpusXMI.Corpus.DeepPhe) trainCorpusDirectory = options.getDeepPheAnaforaDirectory();
+				else{
+					throw new Exception("Train corpus not recognized: " + corpus);
+				}
+				trainFiles.addAll(CorpusXMI.toXMIFiles(options.getXMIDirectory(), CorpusXMI.getTrainTextFiles(corpus, options.getEvaluateOn(), trainCorpusDirectory)));
+			}
+
+			File testCorpusDirectory=null;
+
+			if(options.getTestCorpus() == CorpusXMI.Corpus.SHARP) testCorpusDirectory = options.getSharpBatchesDirectory();
+			else if(options.getTestCorpus() == CorpusXMI.Corpus.SHARP_RELEASE) testCorpusDirectory = options.getSharpCorpusDirectory();
+			else if(options.getTestCorpus() == CorpusXMI.Corpus.DeepPhe) testCorpusDirectory = options.getDeepPheAnaforaDirectory();
+
+			List<File> testFiles = CorpusXMI.toXMIFiles(options.getXMIDirectory(), CorpusXMI.getTestTextFiles(options.getTestCorpus(), options.getEvaluateOn(), testCorpusDirectory));
+
+			if(gridOfSettings != null){
+				// grid search:
+				Map<ParameterSettings, Double> scoredParams = new HashMap<>();
+				for(ParameterSettings params : gridOfSettings) {
+					RelationExtractorEvaluation eval = new RelationExtractorEvaluation(
+							new File("target/models/" + relationCategory),
+							relationClass,
+							ANNOTATOR_CLASSES.get(relationClass),
+							params,
+							options.getTestOnCTakes(),
+							options.getAllowSmallerSystemArguments(),
+							options.getIgnoreImpossibleGoldRelations(),
+							options.getPrintErrors(),
+							options.getClassWeights(),
+							options.getExpandEvents());
+					params.stats = eval.trainAndTest(trainFiles, testFiles);
+					scoredParams.put(params, params.stats.f1());
+				}
+				// print parameters sorted by F1
+				List<ParameterSettings> list = new ArrayList<>( scoredParams.keySet() );
+				Function<ParameterSettings, Double> getCount = Functions.forMap( scoredParams );
+				Collections.sort( list, Ordering.natural().onResultOf( getCount ) );
+
+				// print performance of each set of parameters
+				if ( list.size() > 1 ) {
+					System.err.println( "Summary" );
+					for ( ParameterSettings params : list ) {
+						System.err.printf(
+								"F1=%.3f P=%.3f R=%.3f %s\n",
+								params.stats.f1(),
+								params.stats.precision(),
+								params.stats.recall(),
+								params );
+					}
+					System.err.println();
+				}
+				// print best settings:
+				if ( !list.isEmpty() ) {
+					ParameterSettings lastParams = list.get( list.size() - 1 );
+					System.err.println( "Best model:" );
+					System.err.print( lastParams.stats );
+					System.err.println( lastParams );
+					System.err.println( lastParams.stats.confusions() );
+					System.err.println();
+				}
+			}else {
+				ParameterSettings bestSettings = BEST_PARAMETERS.get(relationClass);
+				RelationExtractorEvaluation eval = new RelationExtractorEvaluation(new File("target/models/" + relationCategory),
+						relationClass,
+						ANNOTATOR_CLASSES.get(relationClass),
+						bestSettings,
+						options.getTestOnCTakes(),
+						options.getAllowSmallerSystemArguments(),
+						options.getIgnoreImpossibleGoldRelations(),
+						options.getPrintErrors(),
+						options.getClassWeights(),
+						options.getExpandEvents());
+				bestSettings.stats = eval.trainAndTest(trainFiles, testFiles);
+				System.err.println( bestSettings.stats);
+				System.err.println(bestSettings);
+				System.err.println(bestSettings.stats.confusions());
+				System.err.println();
+			}
 		}
 	}
 
@@ -250,7 +376,7 @@ public class RelationExtractorEvaluation extends SHARPXMI.Evaluation_ImplBase {
 	 * @param ignoreImpossibleGoldRelations
 	 *          During testing, ignore gold relations that would be impossible to
 	 *          find because there are no corresponding system mentions
-	//	 * @param expandEvent
+	 * @param expandEventParameter
 	 */
 	public RelationExtractorEvaluation(
 			File baseDirectory,

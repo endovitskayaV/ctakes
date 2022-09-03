@@ -1,8 +1,9 @@
 package org.apache.ctakes.gui.dictionary.util;
 
-import java.util.ArrayList;
+import org.apache.ctakes.core.util.StringUtil;
+
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,23 +29,24 @@ final public class TokenUtil {
    }
 
    static private List<String> getSeparatedValueItems( final String line, final char separator ) {
-      if ( line == null || line.trim().isEmpty() ) {
-         return Collections.emptyList();
-      }
-      final List<String> tokens = new ArrayList<>();
-      int startIndex = 0;
-      int stopIndex = line.indexOf( separator );
-      while ( stopIndex > 0 && stopIndex < line.length() ) {
-         tokens.add( line.substring( startIndex, stopIndex ) );
-         startIndex = stopIndex + 1;
-         stopIndex = line.indexOf( separator, startIndex );
-      }
-      if ( startIndex < line.length() - 1 ) {
-         tokens.add( line.substring( startIndex ) );
-      } else {
-         tokens.add( "" );
-      }
-      return tokens;
+      return Arrays.asList( StringUtil.fastSplit( line, separator ) );
+//      if ( line == null || line.trim().isEmpty() ) {
+//         return Collections.emptyList();
+//      }
+//      final List<String> tokens = new ArrayList<>();
+//      int startIndex = 0;
+//      int stopIndex = line.indexOf( separator );
+//      while ( stopIndex > 0 && stopIndex < line.length() ) {
+//         tokens.add( line.substring( startIndex, stopIndex ) );
+//         startIndex = stopIndex + 1;
+//         stopIndex = line.indexOf( separator, startIndex );
+//      }
+//      if ( startIndex < line.length() - 1 ) {
+//         tokens.add( line.substring( startIndex ) );
+//      } else {
+//         tokens.add( "" );
+//      }
+//      return tokens;
    }
 
 

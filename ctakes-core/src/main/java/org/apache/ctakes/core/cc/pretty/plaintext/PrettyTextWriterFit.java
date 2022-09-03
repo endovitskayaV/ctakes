@@ -51,7 +51,7 @@ final public class PrettyTextWriterFit extends AbstractJCasFileWriter {
                           final String outputDir,
                           final String documentId,
                           final String fileName ) throws IOException {
-      _prettyTextWriter.writeFile( jCas, outputDir + "/" + fileName );
+      _prettyTextWriter.writeFile( jCas, outputDir + "/" + documentId + ".pretty.txt" );
    }
 
    /**

@@ -93,7 +93,7 @@ final public class RareWordUtil {
             break;
          }
       }
-      return hasLetter && !BAD_POS_TERM_SET.contains( token );
+      return hasLetter && !BAD_POS_TERM_SET.contains( token.toLowerCase() );
    }
 
 

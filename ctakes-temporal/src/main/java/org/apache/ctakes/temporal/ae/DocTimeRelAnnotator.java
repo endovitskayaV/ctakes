@@ -19,7 +19,7 @@
 package org.apache.ctakes.temporal.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DotLogger;
+import org.apache.ctakes.core.util.log.DotLogger;
 import org.apache.ctakes.temporal.ae.feature.*;
 import org.apache.ctakes.temporal.utils.SoftMaxUtil;
 import org.apache.ctakes.typesystem.type.refsem.Event;

@@ -9,6 +9,7 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.tcas.Annotation;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -28,6 +29,7 @@ final public class ListSentenceFixer extends JCasAnnotator_ImplBase {
 
    static private final Logger LOGGER = Logger.getLogger( "ListSentenceFixer" );
 
+   static private final Pattern WHITESPACE = Pattern.compile( "\\s+" );
 
    /**
     * Where Sentence annotations and List entry annotation ends overlap, Sentences are abbreviated.
@@ -50,7 +52,7 @@ final public class ListSentenceFixer extends JCasAnnotator_ImplBase {
    static private void adjustListEntrySentences( final JCas jCas ) {
       final Collection<ListEntry> listEntries = JCasUtil.select( jCas, ListEntry.class );
       final java.util.List<Sentence> allSentences = new ArrayList<>( JCasUtil.select( jCas, Sentence.class ) );
-      allSentences.sort( ( s1, s2 ) -> s1.getBegin() - s2.getBegin() );
+      allSentences.sort( Comparator.comparingInt( Annotation::getBegin ) );
       // gather map of sentences that cross boundaries of list entries
       final Map<Sentence, Collection<Integer>> sentenceCrossBounds = new HashMap<>();
       for ( ListEntry entry : listEntries ) {
@@ -90,8 +92,5 @@ final public class ListSentenceFixer extends JCasAnnotator_ImplBase {
          jCas.removeFsFromIndexes( crossBounds.getKey() );
       }
    }
-
-
-   static private final Pattern WHITESPACE = Pattern.compile( "\\s+" );
 
 }

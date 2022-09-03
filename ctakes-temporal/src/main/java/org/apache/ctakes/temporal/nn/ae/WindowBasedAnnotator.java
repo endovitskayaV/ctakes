@@ -101,11 +101,13 @@ public class WindowBasedAnnotator extends CleartkAnnotator<String> {
 		}
 
 		//		Boolean expandEvents = false;
+		List<String> badSegs = new ArrayList<>(Arrays.asList("SIMPLE_SEGMENT","20104","20105","20116","20138"));//,"20110"
 
 		Collection<Segment> segments = JCasUtil.select(jCas, Segment.class);
 		List<Segment> segList = Lists.newArrayList();
 		for(Segment seg: segments){
-			if (!seg.getId().equals("SIMPLE_SEGMENT")){//remove simple segment
+			//if (!seg.getId().equals("SIMPLE_SEGMENT")){//remove simple segment
+			if (!badSegs.contains(seg.getId())){
 				segList.add(seg);
 			}
 		}
@@ -217,7 +219,7 @@ public class WindowBasedAnnotator extends CleartkAnnotator<String> {
 			String timeTag = generateTimeTag(jCas, (TimeMention)arg1);
 			tokens.add(timeTag);
 		}else{
-			tokens.add(arg1.getCoveredText().replaceAll("[\r\n]"," newline").toLowerCase());//.toLowerCase()
+			tokens.add(arg1.getCoveredText().replaceAll("[\r\n?|\n]"," newline ").toLowerCase());//.toLowerCase()
 		}
 		tokens.add(type1 + "e");
 
@@ -233,7 +235,7 @@ public class WindowBasedAnnotator extends CleartkAnnotator<String> {
 			String timeTag = generateTimeTag(jCas, (TimeMention)arg2);
 			tokens.add(timeTag);
 		}else{
-			tokens.add(arg2.getCoveredText().replaceAll("[\r\n]"," newline").toLowerCase());//.toLowerCase()
+			tokens.add(arg2.getCoveredText().replaceAll("[\r\n?|\n]"," newline ").toLowerCase());//.toLowerCase()
 		}
 		tokens.add(type2 + "e");
 
@@ -243,7 +245,7 @@ public class WindowBasedAnnotator extends CleartkAnnotator<String> {
 			tokens.add(stringValue);
 		}
 
-		return String.join(" ", tokens).replaceAll("[\r\n]", "newline");
+		return String.join(" ", tokens).replaceAll("[\r\n?|\n]", " newline ");
 	}
 
 

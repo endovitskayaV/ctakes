@@ -19,7 +19,7 @@
 package org.apache.ctakes.core.cc;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.log4j.Logger;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XCASSerializer;
@@ -73,10 +73,10 @@ public class CasConsumer extends CasConsumer_ImplBase {
    private void processView( JCas view ) throws Exception {
       // String docText = view.getDocumentText();
 
-      String docName = DocumentIDAnnotationUtil.getDocumentID( view );
+      String docName = DocIdUtil.getDocumentID( view );
 
       File outputFile;
-      if ( docName == null || docName.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+      if ( docName == null || docName.equals( DocIdUtil.NO_DOCUMENT_ID ) ) {
          docName = "doc" + iv_procCount + ".xml";
       } else {
          docName = docName + ".xml";

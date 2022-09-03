@@ -18,17 +18,16 @@
  */
 package org.apache.ctakes.sideeffect.ae;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.ctakes.core.resource.FileResource;
+import org.apache.ctakes.core.util.FSUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
+import org.apache.ctakes.drugner.type.SubSectionAnnotation;
+import org.apache.ctakes.sideeffect.type.SESentence;
+import org.apache.ctakes.sideeffect.type.SideEffectAnnotation;
+import org.apache.ctakes.sideeffect.util.PatternMatch;
+import org.apache.ctakes.sideeffect.util.SEUtil;
+import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
+import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -36,16 +35,10 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import org.apache.ctakes.core.resource.FileResource;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.FSUtil;
-import org.apache.ctakes.sideeffect.util.PatternMatch;
-import org.apache.ctakes.sideeffect.util.SEUtil;
-import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
-import org.apache.ctakes.typesystem.type.textspan.Segment;
-import org.apache.ctakes.drugner.type.SubSectionAnnotation;
-import org.apache.ctakes.sideeffect.type.SESentence;
-import org.apache.ctakes.sideeffect.type.SideEffectAnnotation;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.*;
 
 /**
  * Rule-based side effect extraction. 
@@ -157,8 +150,8 @@ public class SideEffectAnnotator extends JCasAnnotator_ImplBase
 	{
 		List<PotentialSideEffect> potentialSideEffectLst;
 		List<SideEffect> sideEffectLst;
-		
-        String docName = DocumentIDAnnotationUtil.getDocumentID(jcas);        
+
+      String docName = DocIdUtil.getDocumentID( jcas );
         System.out.println("---"+docName+" processed---");
         
         //remove duplicated named entities

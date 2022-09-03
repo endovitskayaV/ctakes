@@ -21,7 +21,7 @@ package org.apache.ctakes.assertion.medfacts.cleartk;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.ctakes.assertion.attributes.features.selection.FeatureSelection;
 import org.apache.ctakes.assertion.medfacts.cleartk.extractors.FedaFeatureFunction;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.ctakes.typesystem.type.temporary.assertion.AssertionCuePhraseAnnotation;
@@ -309,7 +309,7 @@ public abstract class AssertionCleartkAnalysisEngine extends
 
    @Override
    public void process( JCas jCas ) throws AnalysisEngineProcessException {
-      String documentId = DocumentIDAnnotationUtil.getDocumentID( jCas );
+      String documentId = DocIdUtil.getDocumentID( jCas );
       String domainId = "";
       String domainFeature = null;
 

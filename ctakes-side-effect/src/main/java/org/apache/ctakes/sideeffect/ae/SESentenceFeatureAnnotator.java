@@ -18,18 +18,11 @@
  */
 package org.apache.ctakes.sideeffect.ae;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.ctakes.core.util.FSUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
+import org.apache.ctakes.sideeffect.type.PSESentence;
+import org.apache.ctakes.sideeffect.type.PSESentenceFeature;
+import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -38,11 +31,11 @@ import org.apache.uima.jcas.JFSIndexRepository;
 import org.apache.uima.jcas.cas.StringArray;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.FSUtil;
-import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
-import org.apache.ctakes.sideeffect.type.PSESentence;
-import org.apache.ctakes.sideeffect.type.PSESentenceFeature;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Extract SE sentence (from PSESentence) features and add them to
@@ -76,7 +69,7 @@ public class SESentenceFeatureAnnotator extends JCasAnnotator_ImplBase {
 
 	public void process(JCas jcas)
 			throws AnalysisEngineProcessException {
-		String docName = DocumentIDAnnotationUtil.getDocumentID(jcas);
+      String docName = DocIdUtil.getDocumentID( jcas );
 		System.out.println("---" + docName + "---");
 
 		// add features to cas

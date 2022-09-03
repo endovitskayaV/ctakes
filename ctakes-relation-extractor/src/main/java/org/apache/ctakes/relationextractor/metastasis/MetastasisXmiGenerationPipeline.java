@@ -1,8 +1,8 @@
 package org.apache.ctakes.relationextractor.metastasis;
 
 import com.google.common.io.CharStreams;
-import org.apache.ctakes.relationextractor.eval.SHARPXMI.CopyDocumentTextToGoldView;
-import org.apache.ctakes.relationextractor.eval.SHARPXMI.DocumentIDAnnotator;
+import org.apache.ctakes.relationextractor.eval.CorpusXMI.CopyDocumentTextToGoldView;
+import org.apache.ctakes.relationextractor.eval.CorpusXMI.DocumentIDAnnotator;
 import org.apache.uima.UIMAFramework;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngine;

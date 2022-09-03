@@ -38,7 +38,7 @@ package org.apache.ctakes.core.cc;
  */
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.log4j.Logger;
 import org.apache.uima.UIMAFramework;
 import org.apache.uima.UimaContext;
@@ -125,11 +125,11 @@ public class XmiWriterCasConsumerCtakes extends CasConsumer_ImplBase {
 			throw new AnalysisEngineProcessException( e1 );
 		}
 
-		String originalFileName = DocumentIDAnnotationUtil.getDocumentID( jcas );
+      String originalFileName = DocIdUtil.getDocumentID( jcas );
 		File outFile = null;
 		if ( originalFileName != null
-				&& !originalFileName.isEmpty()
-				&& !originalFileName.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+           && !originalFileName.isEmpty()
+           && !originalFileName.equals( DocIdUtil.NO_DOCUMENT_ID ) ) {
 			File inFile;
 			try {
 				String outFileName = null;
@@ -153,8 +153,8 @@ public class XmiWriterCasConsumerCtakes extends CasConsumer_ImplBase {
 			File inFile;
 			String outFileName = null;
 			if ( originalFileName != null
-					&& !originalFileName.isEmpty()
-					&& !originalFileName.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+              && !originalFileName.isEmpty()
+              && !originalFileName.equals( DocIdUtil.NO_DOCUMENT_ID ) ) {
 				try {
 					if ( originalFileName.contains( "/" ) ) {
 						URI uri = UriUtils.quote( originalFileName );

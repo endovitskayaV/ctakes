@@ -2,7 +2,7 @@ package org.apache.ctakes.core.cc.jdbc.table;
 
 
 import org.apache.ctakes.core.cc.jdbc.row.JdbcRow;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.uima.fit.util.JCasUtil;
@@ -80,6 +80,10 @@ abstract public class AbstractUmlsTable<C> extends AbstractJdbcTable<JCas> {
       final Collection<String> cuis = new HashSet<>();
       boolean batchWritten = false;
       final Collection<IdentifiedAnnotation> annotations = JCasUtil.select( value, IdentifiedAnnotation.class );
+      if ( annotations.isEmpty() ) {
+         return;
+      }
+      int rowCount = 0;
       for ( IdentifiedAnnotation annotation : annotations ) {
          row.initializeEntity( annotation );
          final Collection<UmlsConcept> umlsConcepts = OntologyConceptUtil.getUmlsConcepts( annotation );
@@ -97,9 +101,10 @@ abstract public class AbstractUmlsTable<C> extends AbstractJdbcTable<JCas> {
          for ( UmlsConcept concept : umlsConcepts ) {
             row.addToStatement( statement, concept );
             batchWritten = writeRow();
+            rowCount++;
          }
       }
-      if ( !batchWritten ) {
+      if ( !batchWritten && rowCount > 0 ) {
          // The current batch has not been written to db.  Do so now.
          statement.executeBatch();
          statement.clearBatch();

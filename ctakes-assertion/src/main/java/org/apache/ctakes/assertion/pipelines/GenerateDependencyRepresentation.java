@@ -18,21 +18,13 @@
  */
 package org.apache.ctakes.assertion.pipelines;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.apache.ctakes.assertion.eval.XMIReader;
 import org.apache.ctakes.assertion.pipelines.GenerateTreeRepresentation.ATTRIBUTE;
 import org.apache.ctakes.assertion.util.AssertionDepUtils;
 import org.apache.ctakes.assertion.util.AssertionTreeUtils;
 import org.apache.ctakes.assertion.util.SemanticClasses;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.syntax.ConllDependencyNode;
 import org.apache.ctakes.typesystem.type.textsem.EntityMention;
@@ -50,6 +42,14 @@ import org.apache.uima.jcas.JCas;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class GenerateDependencyRepresentation {
   public static class Options {
@@ -110,7 +110,7 @@ public class GenerateDependencyRepresentation {
   }
   
   public static void processDocument(JCas jcas) {
-    log.info("Processing document: " + DocumentIDAnnotationUtil.getDocumentID(jcas));
+     log.info( "Processing document: " + DocIdUtil.getDocumentID( jcas ) );
     Collection<Sentence> sents = JCasUtil.select(jcas, Sentence.class);
     Sentence lastSent=null;
     for(Sentence sent : sents){

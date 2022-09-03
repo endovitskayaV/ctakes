@@ -1,7 +1,7 @@
 package org.apache.ctakes.core.pipeline;
 
 
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.log4j.Logger;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -138,7 +138,7 @@ public enum EntityCollector {
       @Override
       public void process( final JCas jCas ) {
          LOGGER.info( "Starting processing" );
-         final String id = DocumentIDAnnotationUtil.getDeepDocumentId( jCas );
+         final String id = DocIdUtil.getDeepDocumentId( jCas );
          final Collection<IdentifiedAnnotation> annotations = JCasUtil.select( jCas, IdentifiedAnnotation.class );
          putEntities( id, annotations );
          LOGGER.info( "Finished processing" );

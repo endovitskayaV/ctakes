@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.hl7.fhir.dstu3.model.Bundle;
@@ -25,6 +26,14 @@ import org.hl7.fhir.dstu3.model.Bundle;
       role = PipeBitInfo.Role.WRITER
 )
 final public class FhirJsonWriter extends JCasAnnotator_ImplBase {
+
+   @ConfigurationParameter(
+         name = "WriteNlpFhir",
+         description = "Write all nlp information (paragraph, sentence, base annotations) to FHIR.",
+         mandatory = false,
+         defaultValue = "false"
+   )
+   private boolean _writeNlpFhir;
 
    static private final Logger LOGGER = Logger.getLogger( "FhirJsonWriter" );
 
@@ -47,12 +56,7 @@ final public class FhirJsonWriter extends JCasAnnotator_ImplBase {
    public void process( final JCas jCas ) throws AnalysisEngineProcessException {
       LOGGER.info( "Processing ..." );
 
-      final Bundle bundle = FhirDocComposer.composeDocFhir( jCas, PractitionerCtakes.getInstance(), false );
-
-      final FhirContext fhirContext = FhirContext.forDstu3();
-      final IParser jsonParser = fhirContext.newJsonParser();
-      jsonParser.setPrettyPrint( true );
-      final String json = jsonParser.encodeResourceToString( bundle );
+      final String json = createJson( jCas, _writeNlpFhir );
       System.out.println( json );
       System.out.println();
       System.out.println();
@@ -60,5 +64,16 @@ final public class FhirJsonWriter extends JCasAnnotator_ImplBase {
       LOGGER.info( "Finished." );
    }
 
+   static public String createJson( final JCas jCas ) {
+      return createJson( jCas, false );
+   }
+
+   static public String createJson( final JCas jCas, final boolean writeNlp ) {
+      final Bundle bundle = FhirDocComposer.composeDocFhir( jCas, PractitionerCtakes.getInstance(), writeNlp );
+      final FhirContext fhirContext = FhirContext.forDstu3();
+      final IParser jsonParser = fhirContext.newJsonParser();
+      jsonParser.setPrettyPrint( true );
+      return jsonParser.encodeResourceToString( bundle );
+   }
 
 }

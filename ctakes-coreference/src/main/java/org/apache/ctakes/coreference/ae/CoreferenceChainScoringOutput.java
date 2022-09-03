@@ -1,15 +1,11 @@
 package org.apache.ctakes.coreference.ae;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import org.apache.ctakes.constituency.parser.util.TreeUtils;
 import org.apache.ctakes.core.config.ConfigParameterConstants;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.relation.CollectionTextRelation;
 import org.apache.ctakes.typesystem.type.relation.RelationArgument;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
@@ -31,8 +27,14 @@ import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.cleartk.util.ViewUriUtil;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 @PipeBitInfo(
       name = "Coreference Score Writer",
@@ -105,7 +107,7 @@ public class CoreferenceChainScoringOutput extends JCasAnnotator_ImplBase{
     try{
       filename = new File(ViewUriUtil.getURI(jCas));
     }catch(Exception e){
-      filename = new File(DocumentIDAnnotationUtil.getDocumentID(jCas));
+       filename = new File( DocIdUtil.getDocumentID( jCas ) );
     }
 
     JCas chainsCas = null;

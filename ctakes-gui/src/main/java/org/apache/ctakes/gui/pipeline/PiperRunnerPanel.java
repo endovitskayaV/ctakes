@@ -50,12 +50,10 @@ final public class PiperRunnerPanel extends JPanel {
 
    private final JFileChooser _piperChooser = new JFileChooser();
    private final JFileChooser _parmChooser = new JFileChooser();
-   private DefaultStyledDocument _piperDocument;
-   private PiperTextFilter _piperTextFilter;
 
    private String _piperPath = "";
 
-   private JTextPane _textPane;
+   private JTabbedPane _tabbedPane;
    private JTable _cliTable;
 
    private JButton _openButton;
@@ -63,16 +61,12 @@ final public class PiperRunnerPanel extends JPanel {
    private JButton _parmButton;
    private JButton _runButton;
 
-   //   private final String[] STANDARD_CHARS = { "i", "o", "s", "l", "-user", "-pass", "-xmiOut" };
    private final String[] STANDARD_CHARS = { "i", "o" };
    private final String[] STANDARD_NAMES = { "InputDirectory", "OutputDirectory" };
 
    private final Map<String, String> _charToName = new HashMap<>( STANDARD_CHARS.length );
    private final Map<String, String> _charToValue = new HashMap<>( STANDARD_CHARS.length );
 
-   //   private final java.util.List<Character> _cliChars = new ArrayList<>();
-//private final Map<Character, String> _cliCharToName = new HashMap<>();
-//   private final Map<Character, String> _cliCharToValue = new HashMap<>();
    private final java.util.List<String> _cliChars = new ArrayList<>();
    private final Map<String, String> _cliCharToName = new HashMap<>();
    private final Map<String, String> _cliCharToValue = new HashMap<>();
@@ -80,8 +74,6 @@ final public class PiperRunnerPanel extends JPanel {
 
    PiperRunnerPanel() {
       super( new BorderLayout() );
-//      final String[] STANDARD_NAMES = { "InputDirectory", "OutputDirectory", "SubDirectory",
-//            "LookupXml", "UMLS Username", "UMLS Password", "XMI Output" };
       for ( int i = 0; i < STANDARD_CHARS.length; i++ ) {
          _charToName.put( STANDARD_CHARS[ i ], STANDARD_NAMES[ i ] );
       }
@@ -146,7 +138,7 @@ final public class PiperRunnerPanel extends JPanel {
       final JButton button = new JButton();
       button.setFocusPainted( false );
       // prevents first button from having a painted border
-      button.setFocusable( false );
+//      button.setFocusable( false );
       button.setToolTipText( toolTip );
       toolBar.add( button );
       toolBar.addSeparator( new Dimension( 10, 0 ) );
@@ -161,18 +153,38 @@ final public class PiperRunnerPanel extends JPanel {
       return mainSplit;
    }
 
+   static private class PiperTextDisplay {
+
+      final JScrollPane _scroll;
+
+      private PiperTextDisplay( final String text ) {
+         final DefaultStyledDocument document = new DefaultStyledDocument();
+         new PiperTextFilter( document );
+         final JTextPane textPane = new JTextPane( document );
+         textPane.putClientProperty( "caretWidth", 2 );
+         textPane.setCaretColor( Color.MAGENTA );
+         textPane.setEditable( false );
+         _scroll = new JScrollPane( textPane );
+         final TextLineNumber lineNumber = new TextLineNumber( textPane, 2 );
+         _scroll.setRowHeaderView( lineNumber );
+         _scroll.setMinimumSize( new Dimension( 100, 10 ) );
+         try {
+            document.remove( 0, document.getLength() );
+            document.insertString( 0, text, null );
+         } catch ( BadLocationException blE ) {
+            LOGGER.warn( blE.getMessage() );
+         }
+      }
+
+      private JScrollPane getScrollPane() {
+         return _scroll;
+      }
+
+   }
+
    private JComponent createEastPanel() {
-      _piperDocument = new DefaultStyledDocument();
-      _piperTextFilter = new PiperTextFilter( _piperDocument );
-      _textPane = new JTextPane( _piperDocument );
-      _textPane.putClientProperty( "caretWidth", 2 );
-      _textPane.setCaretColor( Color.MAGENTA );
-      _textPane.setEditable( false );
-      final JScrollPane scroll = new JScrollPane( _textPane );
-      final TextLineNumber lineNumber = new TextLineNumber( _textPane, 2 );
-      scroll.setRowHeaderView( lineNumber );
-      scroll.setMinimumSize( new Dimension( 100, 10 ) );
-      return scroll;
+      _tabbedPane = new JTabbedPane();
+      return _tabbedPane;
    }
 
    private JComponent createWestPanel() {
@@ -181,17 +193,27 @@ final public class PiperRunnerPanel extends JPanel {
 
    private JComponent createCliTable() {
       _cliTable = new SmoothTipTable( new CliOptionModel() );
+      _cliTable.putClientProperty( "terminateEditOnFocusLost", true );
       _cliTable.setRowHeight( 20 );
       _cliTable.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
-      _cliTable.getColumnModel().getColumn( 0 ).setPreferredWidth( 200 );
-      _cliTable.getColumnModel().getColumn( 0 ).setMaxWidth( 200 );
-      _cliTable.getColumnModel().getColumn( 1 ).setMaxWidth( 100 );
-      _cliTable.getColumnModel().getColumn( 3 ).setMaxWidth( 25 );
+      _cliTable.getColumnModel()
+               .getColumn( 0 )
+               .setPreferredWidth( 200 );
+      _cliTable.getColumnModel()
+               .getColumn( 0 )
+               .setMaxWidth( 200 );
+      _cliTable.getColumnModel()
+               .getColumn( 1 )
+               .setMaxWidth( 100 );
+      _cliTable.getColumnModel()
+               .getColumn( 3 )
+               .setMaxWidth( 25 );
       _cliTable.setRowSelectionAllowed( true );
       _cliTable.setCellSelectionEnabled( true );
       _cliTable.setDefaultRenderer( ConfigurationParameter.class, new ParameterCellRenderer() );
       final FileTableCellEditor fileEditor = new FileTableCellEditor();
-      fileEditor.getFileChooser().setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
+      fileEditor.getFileChooser()
+                .setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
       _cliTable.setDefaultRenderer( File.class, fileEditor );
       _cliTable.setDefaultEditor( File.class, fileEditor );
       ListSelectionModel selectionModel = _cliTable.getSelectionModel();
@@ -200,14 +222,17 @@ final public class PiperRunnerPanel extends JPanel {
    }
 
 
-   // -i, -o, -s, -l --user --pass --xmiOut
+   // -i, -o
    private final class CliOptionModel implements TableModel {
+
       private final String[] COLUMN_NAMES = { "Parameter Name", "Option", "Value", "" };
       private final Class<?>[] COLUMN_CLASSES = { String.class, String.class, String.class, File.class };
       private final EventListenerList _listenerList = new EventListenerList();
+
       public int getRowCount() {
          return STANDARD_CHARS.length + _cliChars.size();
       }
+
       @Override
       public int getColumnCount() {
          return 4;
@@ -224,20 +249,19 @@ final public class PiperRunnerPanel extends JPanel {
       public Object getValueAt( final int row, final int column ) {
          if ( column == 0 ) {
             if ( row < STANDARD_CHARS.length ) {
-               return _charToName.get( STANDARD_CHARS[ row ] );
+               return "  " + _charToName.get( STANDARD_CHARS[ row ] );
             }
-//            final Character c = _cliChars.get( row - STANDARD_CHARS.length );
             final String c = _cliChars.get( row - STANDARD_CHARS.length );
-            return _cliCharToName.getOrDefault( c, "Unknown Name" );
+            return "  " + _cliCharToName.getOrDefault( c, "Unknown Name" );
          } else if ( column == 1 ) {
             if ( row < STANDARD_CHARS.length ) {
-               return "-" + STANDARD_CHARS[ row ];
+               return "  -" + STANDARD_CHARS[ row ];
             }
             final String cliChar = _cliChars.get( row - STANDARD_CHARS.length );
             if ( cliChar.length() == 1 ) {
-               return "-" + cliChar;
+               return "  -" + cliChar;
             }
-            return "--" + cliChar;
+            return "  --" + cliChar;
          } else if ( column == 2 ) {
             if ( row < STANDARD_CHARS.length ) {
                return _charToValue.getOrDefault( STANDARD_CHARS[ row ], "" );
@@ -251,7 +275,8 @@ final public class PiperRunnerPanel extends JPanel {
       }
       @Override
       public boolean isCellEditable( final int row, final int column ) {
-         return column != 0;
+//         return column != 0;
+         return column > 1;
       }
       @Override
       public void setValueAt( final Object aValue, final int row, final int column ) {
@@ -306,21 +331,27 @@ final public class PiperRunnerPanel extends JPanel {
          }
          loadPiperFile( _piperChooser.getSelectedFile() );
       }
+
    }
 
    public void loadPiperFile( final File file ) {
       loadPiperFile( file.getPath() );
    }
 
+   private void addPiperTab( final String name, final String text ) {
+      PiperTextDisplay textDisplay = new PiperTextDisplay( text );
+      String title = new File( name ).getName();
+      if ( title.endsWith( ".piper" ) ) {
+         title = title.substring( 0, title.length() - 6 );
+      }
+      _tabbedPane.addTab( title, textDisplay.getScrollPane() );
+   }
+
    public void loadPiperFile( final String path ) {
       final PiperFileReader reader = new PiperFileReader();
       final String text = loadPiperText( reader, path );
-      try {
-         _piperDocument.remove( 0, _piperDocument.getLength() );
-         _piperDocument.insertString( 0, text, null );
-      } catch ( BadLocationException blE ) {
-         LOGGER.warn( blE.getMessage() );
-      }
+      _tabbedPane.removeAll();
+      addPiperTab( new File( path ).getName(), text );
       _cliChars.clear();
       _cliCharToName.clear();
       _cliCharToValue.clear();
@@ -357,12 +388,10 @@ final public class PiperRunnerPanel extends JPanel {
                   error( "Illegal cli values: " + line );
                   return false;
                }
-//               if ( _cliCharToName.put( values[ 1 ].charAt( 0 ), values[ 0 ] ) != null ) {
                if ( _cliCharToName.put( values[ 1 ], values[ 0 ] ) != null ) {
                   error( "Repeated cli value: " + line );
                   return false;
                }
-//               _cliChars.add( values[ 1 ].charAt( 0 ) );
                _cliChars.add( values[ 1 ] );
             }
          } else if ( line.startsWith( "package " ) && line.length() > 9 ) {
@@ -375,6 +404,7 @@ final public class PiperRunnerPanel extends JPanel {
                error( "Piper File not found: " + filePath );
                return false;
             }
+            addPiperTab( filePath, subText );
             if ( !loadPiperCli( reader, subText ) ) {
                error( "Could not load Piper File: " + filePath );
                return false;
@@ -441,8 +471,6 @@ final public class PiperRunnerPanel extends JPanel {
          final String chars = values[ 0 ].substring( 1 );
          if ( _charToName.containsKey( chars ) ) {
             _charToValue.put( chars, values[ 1 ] );
-//         } else if ( chars.length() == 1 && _cliChars.contains( chars.charAt( 0 ) ) ) {
-//            _cliCharToValue.put( chars.charAt( 0 ), values[ 1 ] );
          } else if ( _cliChars.contains( chars ) ) {
             _cliCharToValue.put( chars, values[ 1 ] );
          } else {
@@ -452,7 +480,6 @@ final public class PiperRunnerPanel extends JPanel {
          final String chars = getStringKey( _charToName, values[ 0 ] );
          _charToValue.put( chars, values[ 1 ] );
       } else if ( _cliCharToName.containsValue( values[ 0 ] ) ) {
-//         _cliCharToValue.put( getCharKey( _cliCharToName, values[ 0 ] ), values[ 1 ] );
          _cliCharToValue.put( getCharKey( _cliCharToName, values[ 0 ] ), values[ 1 ] );
       } else {
          LOGGER.warn( "Unknown parameter: " + values[ 0 ] );
@@ -466,14 +493,6 @@ final public class PiperRunnerPanel extends JPanel {
             .findAny()
             .orElse( "" );
    }
-
-//   private Character getCharKey( final Map<Character, String> map, final String value ) {
-//      return map.entrySet().stream()
-//            .filter( e -> value.equals( e.getValue() ) )
-//            .map( Map.Entry::getKey )
-//            .findAny()
-//            .orElse( ' ' );
-//   }
 
    private String getCharKey( final Map<String, String> map, final String value ) {
       return map.entrySet().stream()
@@ -543,7 +562,6 @@ final public class PiperRunnerPanel extends JPanel {
                args.add( value );
             }
          }
-//         for ( Character cli : _cliChars ) {
          for ( String cli : _cliChars ) {
             final String value = _cliCharToValue.get( cli );
             if ( value != null && !value.isEmpty() ) {

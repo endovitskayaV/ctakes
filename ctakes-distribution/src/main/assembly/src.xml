@@ -38,6 +38,8 @@
         <exclude>**/.*/**</exclude>
         <exclude>**/pom.xml.releaseBackup</exclude>
         <exclude>**/release.properties</exclude>
+        <exclude>**/*.yml</exclude>
+        <exclude>**/*.iml</exclude>
       </excludes>
     </fileSet>
   </fileSets>

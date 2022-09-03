@@ -29,7 +29,7 @@ final public class StringUtil {
       if ( nextSplit < 0 ) {
          return new String[]{ line };
       }
-      final String[] tokens = new String[ line.length() / 2 + 1 ];
+      final String[] tokens = new String[ line.length() + 1 ];
       int index = 0;
       int lastSplit = -1;
       while ( nextSplit >= 0 ) {

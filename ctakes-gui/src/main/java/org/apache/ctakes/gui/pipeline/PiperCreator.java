@@ -73,7 +73,9 @@ final public class PiperCreator {
          final Object[] options = { "Scan" };
          final Icon scanIcon = IconLoader.loadIcon( "org/apache/ctakes/gui/pipeline/icon/" + "FindOnPc_48.png" );
          JOptionPane.showOptionDialog( frame, "A Scan must be performed to find available Pipe Bits.\n" +
-                                              "Pipe Bits are used to assemble a cTAKES Pipeline.",
+                                              "Pipe Bits are used to assemble a cTAKES Pipeline.\n" +
+                                              "***  If you are running in a developer environment and few Pipe Bits are found, " +
+                                              "please run PiperCreatorGui in ctakes-examples.",
                "Find Pipe Bits", JOptionPane.YES_OPTION, JOptionPane.PLAIN_MESSAGE, scanIcon, options, options[ 0 ] );
          mainPanel.findPipeBits();
       } );

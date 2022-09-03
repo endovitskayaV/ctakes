@@ -2,7 +2,7 @@ package org.apache.ctakes.temporal.ae;
 
 
 import com.google.common.collect.Lists;
-import org.apache.ctakes.core.util.WordTokenUtil;
+import org.apache.ctakes.core.util.annotation.WordTokenUtil;
 import org.apache.ctakes.typesystem.type.relation.RelationArgument;
 import org.apache.ctakes.typesystem.type.relation.TemporalTextRelation;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;

@@ -19,7 +19,7 @@
 package org.apache.ctakes.core.cc;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.log4j.Logger;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CasConsumer_ImplBase;
@@ -76,8 +76,8 @@ public class FilesInDirectoryCasConsumer extends CasConsumer_ImplBase {
 
          String documentText = jcas.getDocumentText();
 
-         String documentID = DocumentIDAnnotationUtil.getDeepDocumentId( jcas );
-         if ( documentID == null || documentID.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+         String documentID = DocIdUtil.getDeepDocumentId( jcas );
+         if ( documentID == null || documentID.equals( DocIdUtil.NO_DOCUMENT_ID ) ) {
             documentID = "doc_" + new java.util.Date().getTime() + ".xml"; // use timestamp in name: doc_TIMESTAMP.xml
             LOGGER.warn( "Unable to find DocumentIDAnnotation, using " + documentID );
          }

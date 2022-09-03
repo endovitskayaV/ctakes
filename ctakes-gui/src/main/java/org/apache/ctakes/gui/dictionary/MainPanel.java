@@ -1,5 +1,6 @@
 package org.apache.ctakes.gui.dictionary;
 
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.gui.component.DisablerPane;
 import org.apache.ctakes.gui.component.FileChooserPanel;
 import org.apache.ctakes.gui.component.LoggerPanel;
@@ -18,9 +19,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -169,6 +168,36 @@ final class MainPanel extends JPanel {
          } catch ( IOException ioE ) {
             error( "Vocabulary Parse Error", ioE.getMessage() );
          }
+         final File mrSab = new File( __umlsDirPath + "/META", "MRSAB.RRF" );
+         final String mrSabPath = mrSab.getPath();
+         final Map<String, String> sourceNames = new HashMap<>();
+         final Map<String, String> sourceVersions = new HashMap<>();
+         final Map<String, String> sourceCuiCounts = new HashMap<>();
+         LOGGER.info( "Parsing vocabulary names from " + mrSabPath );
+         try ( final BufferedReader reader = FileUtil.createReader( mrSabPath ) ) {
+            int lineCount = 0;
+            java.util.List<String> tokens = FileUtil.readBsvTokens( reader, mrSabPath );
+            while ( tokens != null ) {
+               lineCount++;
+               if ( tokens.size() > MrsabIndex.CFR._index ) {
+                  final String sab = tokens.get( MrsabIndex.RSAB._index );
+                  if ( sources.contains( sab ) ) {
+                     sourceNames.put( sab, tokens.get( MrsabIndex.SON._index ) );
+                     sourceVersions.put( sab, tokens.get( MrsabIndex.SVER._index ) );
+                     sourceCuiCounts.put( sab, tokens.get( MrsabIndex.CFR._index ) );
+                  }
+               }
+               if ( lineCount % 100000 == 0 ) {
+                  LOGGER.info( "File Line " + lineCount + "\t Vocabularies " + sources.size() );
+               }
+               tokens = FileUtil.readBsvTokens( reader, mrConsoPath );
+            }
+            LOGGER.info( "Parsed " + sources.size() + " vocabulary names" );
+            _sourceModel.setSourceInfo( sourceNames, sourceVersions, sourceCuiCounts );
+         } catch ( IOException ioE ) {
+            error( "Vocabulary Parse Error", ioE.getMessage() );
+         }
+
          DisablerPane.getInstance().setVisible( false );
          frame.setCursor( Cursor.getDefaultCursor() );
       }
@@ -193,13 +222,16 @@ final class MainPanel extends JPanel {
       private final String __dictionaryName;
       private final Collection<String> __wantedSources;
       private final Collection<String> __wantedTargets;
-      private final Collection<Tui> __wantedTuis;
+      private final Collection<SemanticTui> __wantedTuis;
       private final Collection<String> __wantedLanguages;
 
-      private DictionaryBuildRunner( final String umlsDirPath, final String ctakesDirPath, final String dictionaryName,
+      private DictionaryBuildRunner( final String umlsDirPath,
+                                     final String ctakesDirPath,
+                                     final String dictionaryName,
                                      final Collection<String> wantedSources,
                                      final Collection<String> wantedTargets,
-                                     final Collection<Tui> wantedTuis, final Collection<String> wantedLangauges ) {
+                                     final Collection<SemanticTui> wantedTuis,
+                                     final Collection<String> wantedLangauges ) {
          __umlsDirPath = umlsDirPath;
          __ctakesDirPath = ctakesDirPath;
          __dictionaryName = dictionaryName;

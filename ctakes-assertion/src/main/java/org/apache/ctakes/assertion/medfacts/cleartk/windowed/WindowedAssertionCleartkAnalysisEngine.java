@@ -26,7 +26,7 @@ import org.apache.ctakes.assertion.medfacts.cleartk.windowed.context.FollowingCo
 import org.apache.ctakes.assertion.medfacts.cleartk.windowed.context.LastCoveredContext;
 import org.apache.ctakes.assertion.medfacts.cleartk.windowed.context.PrecedingContext;
 import org.apache.ctakes.assertion.medfacts.cleartk.windowed.context.feature.extractor.AbstractWindowedFeatureExtractor1;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.ctakes.typesystem.type.temporary.assertion.AssertionCuePhraseAnnotation;
@@ -273,7 +273,7 @@ public abstract class WindowedAssertionCleartkAnalysisEngine extends
 
    @Override
    public void process( JCas jCas ) throws AnalysisEngineProcessException {
-      String documentId = DocumentIDAnnotationUtil.getDocumentID( jCas );
+      String documentId = DocIdUtil.getDocumentID( jCas );
       String domainId = "";
       String domainFeature = null;
 

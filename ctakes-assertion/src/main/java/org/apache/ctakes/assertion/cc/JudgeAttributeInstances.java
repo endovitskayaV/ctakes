@@ -37,20 +37,9 @@ package org.apache.ctakes.assertion.cc;
  * under the License.
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-
 import org.apache.ctakes.assertion.eval.AssertionEvaluation.Options;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.relation.Relation;
 import org.apache.ctakes.typesystem.type.relation.RelationArgument;
@@ -64,13 +53,19 @@ import org.apache.uima.cas.impl.XCASSerializer;
 import org.apache.uima.cas.impl.XmiCasSerializer;
 import org.apache.uima.fit.component.JCasConsumer_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.fit.factory.initializable.InitializableFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.TOP;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.XMLSerializer;
 import org.xml.sax.SAXException;
+
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * 
@@ -178,7 +173,7 @@ public class JudgeAttributeInstances extends JCasConsumer_ImplBase {
 
 	@Override
 	public void process(JCas jCas) throws AnalysisEngineProcessException {
-		String sourceFileName = DocumentIDAnnotationUtil.getDocumentID(jCas);
+      String sourceFileName = DocIdUtil.getDocumentID( jCas );
 		System.out.println("==================\nFile: "+sourceFileName);
 		deletableMentions = new ArrayList<IdentifiedAnnotation>();
 

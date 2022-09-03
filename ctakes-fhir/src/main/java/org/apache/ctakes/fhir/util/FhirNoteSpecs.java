@@ -1,8 +1,8 @@
 package org.apache.ctakes.fhir.util;
 
 
-import org.apache.ctakes.core.note.NoteSpecs;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
+import org.apache.ctakes.core.util.doc.NoteSpecs;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.ctakes.fhir.element.FhirElementFactory;
 import org.apache.ctakes.typesystem.type.structured.SourceData;
 import org.apache.log4j.Logger;

@@ -18,30 +18,11 @@
  */
 package org.apache.ctakes.coreference.ae;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-
+import libsvm.svm_node;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.coreference.type.BooleanLabeledFS;
-import org.apache.ctakes.coreference.type.DemMarkable;
-import org.apache.ctakes.coreference.type.Markable;
-import org.apache.ctakes.coreference.type.MarkablePairSet;
-import org.apache.ctakes.coreference.type.NEMarkable;
-import org.apache.ctakes.coreference.type.PronounMarkable;
-import org.apache.ctakes.coreference.util.AbstractClassifier;
-import org.apache.ctakes.coreference.util.CorefConsts;
-import org.apache.ctakes.coreference.util.FSIteratorToList;
-import org.apache.ctakes.coreference.util.FeatureVector;
-import org.apache.ctakes.coreference.util.MarkableTreeUtils;
-import org.apache.ctakes.coreference.util.SvmVectorCreator;
-import org.apache.ctakes.coreference.util.SyntaxAttributeCalculator;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
+import org.apache.ctakes.coreference.type.*;
+import org.apache.ctakes.coreference.util.*;
 import org.apache.ctakes.typesystem.type.relation.CollectionTextRelation;
 import org.apache.ctakes.typesystem.type.relation.CoreferenceRelation;
 import org.apache.ctakes.typesystem.type.relation.RelationArgument;
@@ -59,7 +40,8 @@ import org.apache.uima.jcas.cas.NonEmptyFSList;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import libsvm.svm_node;
+import java.io.File;
+import java.util.*;
 
 @PipeBitInfo(
 		name = "SVM Chain Creator (MiPACQ)",
@@ -146,7 +128,7 @@ public class MipacqSvmChainCreator extends JCasAnnotator_ImplBase {
 		LinkedList<Annotation> lm = FSIteratorToList.convert(
 				jcas.getJFSIndexRepository().getAnnotationIndex(Markable.type).iterator());
 		Map<Markable, NonEmptyFSList> collectionRas = new HashMap<>();
-		String docName = DocumentIDAnnotationUtil.getDocumentID(jcas);
+      String docName = DocIdUtil.getDocumentID( jcas );
 		logger.info("Classifying coreference in document: " + docName);
 //		ArrayList<CollectionTextRelation> chains = new ArrayList<CollectionTextRelation>();
 		int chainId = 0;

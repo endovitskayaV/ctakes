@@ -54,8 +54,8 @@ public class CellRendererLabel extends JLabel {
    @Override
    protected void firePropertyChange( String propertyName, Object oldValue, Object newValue ) {
       // Strings get interned...
-      if ( propertyName == "text"
-           || ((propertyName == "font" || propertyName == "foreground")
+      if ( propertyName.equals( "text" )
+           || ((propertyName.equals( "font" ) || propertyName.equals( "foreground" ))
                && oldValue != newValue
                && getClientProperty( javax.swing.plaf.basic.BasicHTML.propertyKey ) != null) ) {
 

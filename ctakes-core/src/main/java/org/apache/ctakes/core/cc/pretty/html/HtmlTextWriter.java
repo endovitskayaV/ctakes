@@ -4,8 +4,8 @@ package org.apache.ctakes.core.cc.pretty.html;
 import org.apache.ctakes.core.cc.AbstractJCasFileWriter;
 import org.apache.ctakes.core.cc.pretty.SemanticGroup;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.core.util.textspan.DefaultTextSpan;
 import org.apache.ctakes.core.util.textspan.TextSpan;
 import org.apache.ctakes.typesystem.type.refsem.Event;
@@ -105,7 +105,7 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
       final File htmlFile = new File( outputDir, fileName + FILE_EXTENSION );
       LOGGER.info( "Writing HTML to " + htmlFile.getPath() + " ..." );
       try ( final BufferedWriter writer = new BufferedWriter( new FileWriter( htmlFile ) ) ) {
-         final String title = DocumentIDAnnotationUtil.getDocumentID( jCas );
+         final String title = DocIdUtil.getDocumentID( jCas );
          writer.write( startBody() );
          writer.write( getCssLink( CSS_FILENAME ) );
          writer.write( getJsLink( JS_FILENAME ) );
@@ -772,7 +772,7 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
    }
 
    static private String getSafeText( final String text ) {
-      if ( text.isEmpty() ) {
+      if ( text == null || text.isEmpty() ) {
          return "";
       }
       String safeText = text.replaceAll( "'", "&apos;" );

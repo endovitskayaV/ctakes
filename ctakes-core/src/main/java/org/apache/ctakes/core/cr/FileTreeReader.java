@@ -44,6 +44,7 @@ final public class FileTreeReader extends AbstractFileTreeReader {
     */
    protected void readFile( final JCas jCas, final File file ) throws IOException {
       String docText = readFile( file );
+      docText = handleQuotedDoc( docText );
       docText = handleTextEol( docText );
       jCas.setDocumentText( docText );
    }
@@ -66,6 +67,11 @@ final public class FileTreeReader extends AbstractFileTreeReader {
             // in the stream, and java streams and exceptions do not go well together
             LOGGER.warn( "Bad characters in " + file.getPath() );
          }
+      }
+      try {
+         return readByStreamReader( file );
+      } catch ( IOException ioE ) {
+         // ignore for now, try to read by buffer.
       }
       return readByBuffer( file );
    }
@@ -119,6 +125,29 @@ final public class FileTreeReader extends AbstractFileTreeReader {
             } else {
                sb.append( new String( buffer, 0, length ) );
             }
+         }
+      } catch ( FileNotFoundException fnfE ) {
+         throw new IOException( fnfE );
+      }
+      return sb.toString();
+   }
+
+   /**
+    * Reads file using a stream reader
+    *
+    * @param file file to read
+    * @return text in file
+    * @throws IOException if the file could not be read
+    */
+   private String readByStreamReader( final File file ) throws IOException {
+      final StringBuilder sb = new StringBuilder();
+      final CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder().onMalformedInput( CodingErrorAction.IGNORE );
+      try ( BufferedReader reader
+                  = new BufferedReader( new InputStreamReader( Files.newInputStream( file.toPath() ), decoder ) ) ) {
+         int i = reader.read();
+         while ( i != -1 ) {
+            sb.append( Character.toChars( i ) );
+            i = reader.read();
          }
       } catch ( FileNotFoundException fnfE ) {
          throw new IOException( fnfE );

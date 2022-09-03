@@ -19,7 +19,7 @@
 package org.apache.ctakes.coreference.cc;
 
 import org.apache.ctakes.core.config.ConfigParameterConstants;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngine;
@@ -122,8 +122,8 @@ public class PreprocessAndWriteXmi {
             // FIXME - not using this right now, just use default jcas
 //				JCas goldView = jCas.getView(RelationExtractorEvaluation.GOLD_VIEW_NAME);
             JCas goldView = jCas;
-            String documentID = DocumentIDAnnotationUtil.getDocumentID( goldView );
-            if ( documentID == null || documentID.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+            String documentID = DocIdUtil.getDocumentID( goldView );
+            if ( documentID == null || documentID.equals( DocIdUtil.NO_DOCUMENT_ID ) ) {
                throw new IllegalArgumentException( "No documentID for CAS:\n" + jCas );
             }
             File outFile = new File( this.outputDirectory, documentID + ".xmi" );

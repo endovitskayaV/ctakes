@@ -125,7 +125,7 @@ final public class ListAnnotator extends JCasAnnotator_ImplBase {
                final Map<Pair<Integer>, ListType> uniqueListTypes = getUniqueListTypes( listTypes );
                createLists( jcas, uniqueListTypes, paragraph.getCoveredText(), paragraph.getBegin() );
             } catch ( StringIndexOutOfBoundsException oobE ) {
-               // I'm not sure how this ever happens.  Paragraph bounds from the dPheParagraphAnnotator are always valid.
+               // I'm not sure how this ever happens.  Paragraph bounds from the ParagraphAnnotator are always valid.
                // I have run ~1000 notes without problem, but one note in Seer causes problems.  Ignore.
             }
          }
@@ -179,14 +179,12 @@ final public class ListAnnotator extends JCasAnnotator_ImplBase {
                if ( boundsJ.getValue1() >= boundsI.getValue1() && boundsJ.getValue1() <= boundsI.getValue2() ) {
                   removalTypeBounds.add( boundsJ );
                   if ( boundsJ.getValue2() > boundsI.getValue2() ) {
-//                     newTypeBounds.put( new Pair<>( boundsI.getValue1(), boundsJ.getValue2() ), boundsI );
                      // Add J as a second list
                      newTypeBounds.put( new Pair<>( boundsI.getValue2(), boundsJ.getValue2() ), boundsJ );
                   }
                } else if ( boundsJ.getValue2() >= boundsI.getValue1() && boundsJ.getValue2() <= boundsI.getValue2() ) {
                   removalTypeBounds.add( boundsJ );
                   if ( boundsJ.getValue1() < boundsI.getValue1() ) {
-//                     newTypeBounds.put( new Pair<>( boundsJ.getValue1(), boundsI.getValue2() ), boundsI );
                      // Add J as a second list
                      newTypeBounds.put( new Pair<>( boundsJ.getValue1(), boundsI.getValue1() ), boundsJ );
                   }

@@ -1,19 +1,19 @@
 package org.apache.ctakes.core.semantic;
 
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
-import org.apache.ctakes.typesystem.type.textsem.EventMention;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
-import org.apache.ctakes.typesystem.type.textsem.TimeMention;
 import org.apache.uima.jcas.JCas;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import static org.apache.ctakes.core.semantic.SemanticGroup.*;
+import static org.apache.ctakes.core.util.annotation.SemanticGroup.*;
 
+/**
+ * @deprecated use SemanticTui in core.util.annotation
+ */
+@Deprecated
 public enum SemanticTui {
    T116( 116, "Amino Acid, Peptide, or Protein", DRUG ),
    T020( 20, "Acquired Abnormality", DISORDER ),
@@ -193,65 +193,25 @@ public enum SemanticTui {
       return _group.getCreator();
    }
 
-   private String getMatchType() {
-      return getMatchable( _name );
+   static public org.apache.ctakes.core.util.annotation.SemanticTui getTui( final String semanticType ) {
+      return org.apache.ctakes.core.util.annotation.SemanticTui.getTui( semanticType );
    }
 
-   static public SemanticTui getTui( final String semanticType ) {
-      final String toMatch = getMatchable( semanticType );
-      for ( SemanticTui tui : SemanticTui.values() ) {
-         if ( tui.getMatchType()
-               .equals( toMatch ) ) {
-            return tui;
-         }
-      }
-      return UNKNOWN;
+   static public org.apache.ctakes.core.util.annotation.SemanticTui getTui( final int code ) {
+      return org.apache.ctakes.core.util.annotation.SemanticTui.getTui( code );
    }
 
-   static public SemanticTui getTui( final int code ) {
-      for ( SemanticTui tui : SemanticTui.values() ) {
-         if ( tui.getCode() == code ) {
-            return tui;
-         }
-      }
-      return UNKNOWN;
+   static public org.apache.ctakes.core.util.annotation.SemanticTui getTuiFromCode( final String tuiCode ) {
+      return org.apache.ctakes.core.util.annotation.SemanticTui.getTuiFromCode( tuiCode );
    }
 
-   static public SemanticTui getTuiFromCode( final String tuiCode ) {
-      for ( SemanticTui tui : SemanticTui.values() ) {
-         if ( tui.name()
-               .equals( tuiCode ) ) {
-            return tui;
-         }
-      }
-      return UNKNOWN;
-
+   static public Collection<org.apache.ctakes.core.util.annotation.SemanticTui> getTuis(
+         final IdentifiedAnnotation annotation ) {
+      return org.apache.ctakes.core.util.annotation.SemanticTui.getTuis( annotation );
    }
 
-   static public Collection<SemanticTui> getTuis( final IdentifiedAnnotation annotation ) {
-      final Collection<UmlsConcept> umlsConcepts = OntologyConceptUtil.getUmlsConcepts( annotation );
-      if ( umlsConcepts != null && !umlsConcepts.isEmpty() ) {
-         return umlsConcepts.stream()
-               .map( UmlsConcept::getTui )
-               .distinct()
-               .map( SemanticTui::getTuiFromCode )
-               .collect( Collectors.toList() );
-      }
-      if ( annotation instanceof EventMention ) {
-         return Collections.singletonList( T051 );
-      } else if ( annotation instanceof TimeMention ) {
-         return Collections.singletonList( T079 );
-      }
-      return Collections.singletonList( UNKNOWN );
-   }
-
-   static public SemanticTui getTui( final UmlsConcept umlsConcept ) {
-      return getTuiFromCode( umlsConcept.getTui() );
-   }
-
-   static private String getMatchable( final String text ) {
-      return text.toLowerCase()
-            .replaceAll( ",", "" );
+   static public org.apache.ctakes.core.util.annotation.SemanticTui getTui( final UmlsConcept umlsConcept ) {
+      return org.apache.ctakes.core.util.annotation.SemanticTui.getTui( umlsConcept );
    }
 
 }

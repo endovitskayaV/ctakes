@@ -2,7 +2,7 @@ package org.apache.ctakes.core.patient;
 
 import org.apache.ctakes.core.ae.NamedEngine;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;

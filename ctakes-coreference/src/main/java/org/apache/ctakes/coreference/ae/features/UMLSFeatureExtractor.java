@@ -1,12 +1,6 @@
 package org.apache.ctakes.coreference.ae.features;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.dependency.parser.util.DependencyUtility;
 import org.apache.ctakes.relationextractor.ae.features.RelationFeaturesExtractor;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
@@ -21,6 +15,8 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.cleartk.ml.Feature;
 import org.cleartk.util.ViewUriUtil;
+
+import java.util.*;
 
 public class UMLSFeatureExtractor implements RelationFeaturesExtractor<IdentifiedAnnotation,IdentifiedAnnotation> {
 
@@ -140,9 +136,11 @@ public class UMLSFeatureExtractor implements RelationFeaturesExtractor<Identifie
 
 	public static String getDocId(JCas jcas) {
 	  String docId = null;
-	  
-	  docId = DocumentIDAnnotationUtil.getDocumentID(jcas);
-	  if(docId != DocumentIDAnnotationUtil.NO_DOCUMENT_ID) return docId;
+
+      docId = DocIdUtil.getDocumentID( jcas );
+      if ( docId != DocIdUtil.NO_DOCUMENT_ID ) {
+         return docId;
+      }
 	  
 	  try{
 	    if(jcas.getView(ViewUriUtil.URI) != null){

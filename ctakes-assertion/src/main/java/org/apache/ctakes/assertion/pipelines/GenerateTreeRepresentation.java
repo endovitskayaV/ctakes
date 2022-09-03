@@ -18,19 +18,10 @@
  */
 package org.apache.ctakes.assertion.pipelines;
 
-import static org.apache.ctakes.assertion.util.AssertionTreeUtils.extractAboveLeftConceptTree;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.apache.ctakes.assertion.eval.XMIReader;
 import org.apache.ctakes.assertion.util.SemanticClasses;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.textsem.EntityMention;
 import org.apache.ctakes.typesystem.type.textsem.EventMention;
@@ -46,6 +37,15 @@ import org.apache.uima.jcas.JCas;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import static org.apache.ctakes.assertion.util.AssertionTreeUtils.extractAboveLeftConceptTree;
 
 public class GenerateTreeRepresentation{
 
@@ -112,7 +112,7 @@ public class GenerateTreeRepresentation{
 	}
 
 	private static void processDocument(JCas jcas) {
-		log.info("Processing document: " + DocumentIDAnnotationUtil.getDocumentID(jcas));
+      log.info( "Processing document: " + DocIdUtil.getDocumentID( jcas ) );
 		Collection<IdentifiedAnnotation> mentions = JCasUtil.select(jcas, IdentifiedAnnotation.class);
 		for(IdentifiedAnnotation mention : mentions){
 		  if(mention instanceof EventMention || mention instanceof EntityMention){

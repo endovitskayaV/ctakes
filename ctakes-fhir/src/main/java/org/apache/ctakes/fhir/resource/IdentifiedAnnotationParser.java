@@ -1,6 +1,6 @@
 package org.apache.ctakes.fhir.resource;
 
-import org.apache.ctakes.core.semantic.SemanticGroup;
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
 import org.apache.ctakes.fhir.element.FhirElementParser;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.refsem.Event;

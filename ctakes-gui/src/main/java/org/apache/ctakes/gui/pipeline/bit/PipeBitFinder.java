@@ -5,7 +5,7 @@ import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.ScanInterruptedException;
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.SubclassMatchProcessor;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
-import org.apache.ctakes.core.util.DotLogger;
+import org.apache.ctakes.core.util.log.DotLogger;
 import org.apache.log4j.Logger;
 import org.apache.uima.analysis_component.Annotator_ImplBase;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;

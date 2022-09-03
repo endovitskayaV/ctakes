@@ -1,7 +1,7 @@
 package org.apache.ctakes.fhir.cc;
 
 
-import org.apache.ctakes.core.util.EssentialAnnotationUtil;
+import org.apache.ctakes.core.util.annotation.EssentialAnnotationUtil;
 import org.apache.ctakes.fhir.element.FhirElementFactory;
 import org.apache.ctakes.fhir.resource.*;
 import org.apache.ctakes.fhir.util.FhirNoteSpecs;

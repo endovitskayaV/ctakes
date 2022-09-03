@@ -2,10 +2,7 @@ package org.apache.ctakes.gui.dictionary.util;
 
 import org.apache.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * Author: SPF
@@ -46,6 +43,7 @@ final public class JdbcUtil {
          LOGGER.error( sqlE.getMessage() );
          System.exit( 1 );
       }
+      registerShutdownHook( connection );
       return connection;
    }
 
@@ -80,6 +78,28 @@ final public class JdbcUtil {
       }
       sb.append( "?)" );
       return sb.toString();
+   }
+
+   /**
+    * register a shutdown hook that will shut down the database, removing temporary and lock files.
+    *
+    * @param connection -
+    */
+   static private void registerShutdownHook( final Connection connection ) {
+      // Registers a shutdown hook for the Hsql instance so that it
+      // shuts down nicely and any temporary or lock files are cleaned up.
+      Runtime.getRuntime().addShutdownHook( new Thread( () -> {
+         try {
+            final Statement shutdown = connection.createStatement();
+            shutdown.execute( "SHUTDOWN" );
+            shutdown.close();
+            // The db is read-only, so there should be no need to roll back any transactions.
+            connection.clearWarnings();
+            connection.close();
+         } catch ( SQLException sqlE ) {
+            // ignore
+         }
+      } ) );
    }
 
 }

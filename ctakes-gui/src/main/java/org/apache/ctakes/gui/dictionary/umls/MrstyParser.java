@@ -1,6 +1,7 @@
 package org.apache.ctakes.gui.dictionary.umls;
 
 
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.gui.dictionary.util.FileUtil;
 import org.apache.log4j.Logger;
 
@@ -28,14 +29,14 @@ final public class MrstyParser {
    }
 
    static public Map<Long, Concept> createConceptsForTuis( final String umlsPath,
-                                                           final Collection<Tui> wantedTuis ) {
+                                                           final Collection<SemanticTui> wantedTuis ) {
       final String mrstyPath = umlsPath + MRSTY_SUB_PATH;
       LOGGER.info( "Compiling list of Cuis with wanted Tuis using " + mrstyPath );
       long lineCount = 0;
       final Map<Long, Concept> wantedConcepts = new HashMap<>();
-      final Collection<Tui> usedTuis = EnumSet.noneOf( Tui.class );
-      final Map<Tui, Long> tuiCodeCount = new EnumMap<>( Tui.class );
-      for ( Tui tui : wantedTuis ) {
+      final Collection<SemanticTui> usedTuis = EnumSet.noneOf( SemanticTui.class );
+      final Map<SemanticTui, Long> tuiCodeCount = new EnumMap<>( SemanticTui.class );
+      for ( SemanticTui tui : wantedTuis ) {
          tuiCodeCount.put( tui, 0L );
       }
       try ( final BufferedReader reader = FileUtil.createReader( mrstyPath ) ) {
@@ -43,7 +44,7 @@ final public class MrstyParser {
          while ( tokens != null ) {
             lineCount++;
             if ( tokens.size() > TUI._index ) {
-               final Tui tuiEnum = Tui.valueOf( tokens.get( TUI._index ) );
+               final SemanticTui tuiEnum = SemanticTui.valueOf( tokens.get( TUI._index ) );
                if ( !wantedTuis.contains( tuiEnum ) ) {
                   tokens = FileUtil.readBsvTokens( reader, mrstyPath );
                   continue;
@@ -76,8 +77,8 @@ final public class MrstyParser {
       LOGGER.info( "File Lines " + lineCount + "\t Cuis: " + counts );
       if ( usedTuis.size() != wantedTuis.size() ) {
          wantedTuis.removeAll( usedTuis );
-         for ( Tui missingTui : wantedTuis ) {
-            LOGGER.warn( "Could not find Cuis for Tui " + missingTui + " " + missingTui.getDescription() );
+         for ( SemanticTui missingTui : wantedTuis ) {
+            LOGGER.warn( "Could not find Cuis for Tui " + missingTui + " " + missingTui.getSemanticType() );
          }
       }
       return wantedConcepts;

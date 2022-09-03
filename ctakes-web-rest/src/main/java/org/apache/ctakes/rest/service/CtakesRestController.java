@@ -20,7 +20,7 @@ package org.apache.ctakes.rest.service;
 
 import org.apache.ctakes.core.pipeline.PipelineBuilder;
 import org.apache.ctakes.core.pipeline.PiperFileReader;
-import org.apache.ctakes.rest.util.JCasParser;
+import org.apache.ctakes.rest.util.JCasFormatter;
 import org.apache.log4j.Logger;
 import org.apache.uima.UIMAFramework;
 import org.apache.uima.analysis_engine.AnalysisEngine;
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 
 /*
@@ -50,6 +51,7 @@ public class CtakesRestController {
     private static final String DEFAULT_PIPELINE = "Default";
     private static final String FULL_PIPELINE = "Full";
     private static final Map<String, PipelineRunner> _pipelineRunners = new HashMap<>();
+    private static final JCasFormatter formatter = new JCasFormatter();
 
     @PostConstruct
     public void init() throws ServletException {
@@ -58,10 +60,11 @@ public class CtakesRestController {
 //        _pipelineRunners.put(FULL_PIPELINE, new PipelineRunner(FULL_PIPER_FILE_PATH));
     }
 
-    @RequestMapping(value = "/analyze", method = RequestMethod.POST)
+    @RequestMapping(value = "/analyze", method = RequestMethod.POST, produces = {"application/json"})
     @ResponseBody
-    public Map<String, List<CuiResponse>> getAnalyzedJSON(@RequestBody String analysisText,
-                                                                  @RequestParam("pipeline") Optional<String> pipelineOptParam)
+    public String processTextWithPipeline(@RequestBody String analysisText,
+                                                                  @RequestParam("pipeline") Optional<String> pipelineOptParam,
+                                                                  @RequestParam("format") Optional<String> outputParam)
             throws Exception {
         String pipeline = DEFAULT_PIPELINE;
         if(pipelineOptParam.isPresent()) {
@@ -70,13 +73,20 @@ public class CtakesRestController {
             }
         }
         final PipelineRunner runner = _pipelineRunners.get(pipeline);
-        return runner.process(analysisText);
 
-    }
-
-    static private Map<String, List<CuiResponse>> formatResults(JCas jcas) throws Exception {
-        JCasParser parser = new JCasParser();
-        return parser.parse(jcas);
+        if(outputParam.isPresent()){
+            String format = outputParam.get().toLowerCase();
+            if(format.equals("full")){
+                return runner.process(analysisText, JCasFormatter::getJsonFullFormat);
+            }else if(format.equals("xmi")){
+                return runner.process(analysisText, JCasFormatter::getXmiFormat);
+            }else if(format.equals("filtered")){
+                return runner.process(analysisText, JCasFormatter::getJsonFilteredFormat);
+            }
+        }else{
+            return runner.process(analysisText, JCasFormatter::getJsonSummaryFormat);
+        }
+        return "";
     }
 
     static private final class PipelineRunner {
@@ -96,22 +106,23 @@ public class CtakesRestController {
             }
         }
 
-        public Map<String, List<CuiResponse>> process(final String text) throws ServletException {
+        public String process(final String text, Function<JCas,String> jcasToString) throws ServletException {
             JCas jcas = null;
             Map<String, List<CuiResponse>> resultMap = null;
+            String output = null;
             if (text != null) {
                 try {
-                    jcas = _pool.getJCas(-1);
+                    jcas = _pool.getJCas(0);
                     jcas.setDocumentText(text);
                     _engine.process(jcas);
-                    resultMap = formatResults(jcas);
+                    output = jcasToString.apply(jcas);
                     _pool.releaseJCas(jcas);
                 } catch (Exception e) {
                     LOGGER.error("Error processing Analysis engine");
                     throw new ServletException(e);
                 }
             }
-            return resultMap;
+            return output;
         }
     }
 }

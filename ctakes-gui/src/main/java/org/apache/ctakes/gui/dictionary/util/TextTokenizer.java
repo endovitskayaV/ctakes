@@ -94,7 +94,7 @@ final public class TextTokenizer {
 
    static private boolean isPrefix( final String word ) {
       final String prefixQ = word + "-";
-      return PREFIX_SET.contains( prefixQ );
+      return PREFIX_SET.contains( prefixQ.toLowerCase() );
    }
 
    static private boolean isSuffix( final String word, final int startIndex ) {
@@ -106,11 +106,11 @@ final public class TextTokenizer {
          return false;
       }
       final String suffixQ = "-" + nextCharTerm;
-      return SUFFIX_SET.contains( suffixQ );
+      return SUFFIX_SET.contains( suffixQ.toLowerCase() );
    }
 
    static private boolean isOwnerApostrophe( final CharSequence word, final int startIndex ) {
-      return word.length() == startIndex + 1 && word.charAt( startIndex ) == 's';
+      return word.length() == startIndex + 1 && (word.charAt( startIndex ) == 's' || word.charAt( startIndex ) == 'S');
    }
 
    static private boolean isNumberDecimal( final CharSequence word, final int startIndex ) {
@@ -179,7 +179,8 @@ final public class TextTokenizer {
       if ( text.isEmpty() ) {
          return text;
       }
-      final String[] splits = WHITESPACE.split( text.toLowerCase() );
+//      final String[] splits = WHITESPACE.split( text.toLowerCase() );
+      final String[] splits = WHITESPACE.split( text );
       if ( splits.length == 0 ) {
          return "";
       }
@@ -189,7 +190,7 @@ final public class TextTokenizer {
          splits[ splits.length - 1 ] = lastSplit.substring( 0, lastSplit.length() - 1 );
       }
       return Arrays.stream( splits )
-            .map( s -> getTokens( s, separateDigits ) )
+                   .map( s -> getTokens( s, separateDigits ) )
             .flatMap( Collection::stream )
             .collect( Collectors.joining( " " ) );
    }

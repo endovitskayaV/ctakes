@@ -29,70 +29,27 @@
 		<version>4.0.1-SNAPSHOT</version>
 	</parent>
 	<dependencies>
-	     <dependency>
+      <dependency>
 			<groupId>org.apache.ctakes</groupId>
 			<artifactId>ctakes-dependency-parser-res</artifactId>
 		</dependency>
-        <!--  type system is added by utils.  -->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.ctakes</groupId>-->
-        <!--<artifactId>ctakes-type-system</artifactId>-->
-        <!--</dependency>-->
-        <!--  core is added by pos tagger and lvg.  -->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.ctakes</groupId>-->
-        <!--<artifactId>ctakes-core</artifactId>-->
-        <!--</dependency>-->
-        <!--  We need to stop adding entire modules of code, resources and dependencies just for aggregate engines.  -->
-        <!--  LVG is not necessary to run dependency parser.  Only modules absolutely required to run something should be in pom.  -->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.ctakes</groupId>-->
-        <!--<artifactId>ctakes-lvg</artifactId>-->
-        <!--</dependency>-->
+      <dependency>
+         <groupId>org.apache.ctakes</groupId>
+         <artifactId>ctakes-dependency-parser-res-clear</artifactId>
+      </dependency>
 		<dependency>
 			<groupId>org.apache.ctakes</groupId>
 			<artifactId>ctakes-pos-tagger</artifactId>
 		</dependency>
-        <!--  utils is added by pos tagger (via core).  -->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.ctakes</groupId>-->
-        <!--<artifactId>ctakes-utils</artifactId>-->
-        <!--</dependency>-->
-        <!--  clearnlp is added by pos tagger.  -->
-        <!--<dependency>-->
-        <!--<groupId>com.googlecode.clearnlp</groupId>-->
-        <!--<artifactId>clearnlp</artifactId>-->
-        <!--</dependency>-->
 		<dependency>
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
 		</dependency>
-        <!--  junit is added by utils.  -->
-        <!--<dependency>-->
-        <!--<groupId>junit</groupId>-->
-        <!--<artifactId>junit</artifactId>-->
-        <!--</dependency>-->
-        <!--  cleartk util is added by core.  -->
-        <!--<dependency>-->
-        <!--<groupId>org.cleartk</groupId>-->
-        <!--<artifactId>cleartk-util</artifactId>-->
-        <!--</dependency>-->
-		<!-- we excluded spring-context uimafit transitive dependency in the parent pom, include it here -->
-        <!--  spring context is added by type system.  -->
-        <!--<dependency>-->
-        <!--<groupId>org.springframework</groupId>-->
-        <!--<artifactId>spring-context</artifactId>-->
-        <!--</dependency>		-->
         <!--  TODO where is hppc actually used?  -->
 		<dependency>
 			<groupId>com.carrotsearch</groupId>
 			<artifactId>hppc</artifactId>
 		</dependency>
-        <!--  commons-io is added by core.  -->
-        <!--<dependency>-->
-        <!--<groupId>commons-io</groupId>-->
-        <!--<artifactId>commons-io</artifactId>-->
-        <!--</dependency>-->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
@@ -101,11 +58,6 @@
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 		</dependency>
-        <!--  uimafit core is added by type system.  -->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.uima</groupId>-->
-        <!--<artifactId>uimafit-core</artifactId>-->
-        <!--</dependency>-->
 	</dependencies>
 	<description>This wraps the ClearNLP dependency parser and semantic role labeler into a UIMA friendly annotator</description>
 </project>

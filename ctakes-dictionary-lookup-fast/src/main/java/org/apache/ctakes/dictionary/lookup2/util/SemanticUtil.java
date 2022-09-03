@@ -18,34 +18,33 @@
  */
 package org.apache.ctakes.dictionary.lookup2.util;
 
-import org.apache.ctakes.typesystem.type.constants.CONST;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 
 /**
+ *
  * Utility class to aid in the handling of semantic groups, semantic types, and tuis.
  * Used most by the term consumers.
  * <p/>
  * Author: SPF
  * Affiliation: CHIP-NLP
  * Date: 2/25/14
+ * @deprecated
  */
+@Deprecated
 final public class SemanticUtil {
 
    private SemanticUtil() {
    }
 
    // cTakes types
-   static private final String[] DRUG = { "T109", "T110", "T114", "T115", "T116", "T118", "T119",
-                                          "T121", "T122", "T123", "T124", "T125", "T126", "T127",
-                                          "T129", "T130", "T131", "T195", "T196", "T197", "T200", "T203" };
-   static private final String[] DISO = { "T019", "T020", "T037", "T047", "T048", "T049", "T050", "T190", "T191" };
-   static private final String[] FIND = { "T033", "T034", "T040", "T041", "T042", "T043", "T044", "T045", "T046",
-                                          "T056", "T057", "T184" };
-   static private final String[] PROC = { "T059", "T060", "T061" };
-   static private final String[] ANAT = { "T021", "T022", "T023", "T024", "T025", "T026", "T029", "T030" };
+//   static private final String[] DRUG = { "T109", "T110", "T114", "T115", "T116", "T118", "T119",
+//                                          "T121", "T122", "T123", "T124", "T125", "T126", "T127",
+//                                          "T129", "T130", "T131", "T195", "T196", "T197", "T200", "T203" };
+//   static private final String[] DISO = { "T019", "T020", "T037", "T047", "T048", "T049", "T050", "T190", "T191" };
+//   static private final String[] FIND = { "T033", "T034", "T040", "T041", "T042", "T043", "T044", "T045", "T046",
+//                                          "T056", "T057", "T184" };
+//   static private final String[] PROC = { "T059", "T060", "T061" };
+//   static private final String[] ANAT = { "T021", "T022", "T023", "T024", "T025", "T026", "T029", "T030" };
 
    // non-cTakes types
    // cTakes ID 7.  What is Clinical Attribute?  Just the single [standard] type?
@@ -58,11 +57,11 @@ final public class SemanticUtil {
    //   static private final String[] PHEN = { "T034", "T038", "T068", "T069", "T067", "T070" };
 
 
-   static private final Collection<String> ANAT_TUIS = new HashSet<>( Arrays.asList( ANAT ) );
-   static private final Collection<String> DISO_TUIS = new HashSet<>( Arrays.asList( DISO ) );
-   static private final Collection<String> FIND_TUIS = new HashSet<>( Arrays.asList( FIND ) );
-   static private final Collection<String> PROC_TUIS = new HashSet<>( Arrays.asList( PROC ) );
-   static private final Collection<String> DRUG_TUIS = new HashSet<>( Arrays.asList( DRUG ) );
+//   static private final Collection<String> ANAT_TUIS = new HashSet<>( Arrays.asList( ANAT ) );
+//   static private final Collection<String> DISO_TUIS = new HashSet<>( Arrays.asList( DISO ) );
+//   static private final Collection<String> FIND_TUIS = new HashSet<>( Arrays.asList( FIND ) );
+//   static private final Collection<String> PROC_TUIS = new HashSet<>( Arrays.asList( PROC ) );
+//   static private final Collection<String> DRUG_TUIS = new HashSet<>( Arrays.asList( DRUG ) );
 
 
 //   static public final String UNKNOWN_SEMANTIC_GROUP = "UNKNOWN_SEMANTIC_GROUP";
@@ -131,18 +130,19 @@ final public class SemanticUtil {
     * @return the cTakes group for the given tui
     */
    static public Integer getTuiSemanticGroupId( final String tui ) {
-      if ( ANAT_TUIS.contains( tui ) ) {
-         return CONST.NE_TYPE_ID_ANATOMICAL_SITE;
-      } else if ( DISO_TUIS.contains( tui ) ) {
-         return CONST.NE_TYPE_ID_DISORDER;
-      } else if ( FIND_TUIS.contains( tui ) ) {
-         return CONST.NE_TYPE_ID_FINDING;
-      } else if ( PROC_TUIS.contains( tui ) ) {
-         return CONST.NE_TYPE_ID_PROCEDURE;
-      } else if ( DRUG_TUIS.contains( tui ) ) {
-         return CONST.NE_TYPE_ID_DRUG;
-      }
-      return CONST.NE_TYPE_ID_UNKNOWN;
+      return SemanticTui.getTuiFromCode( tui ).getGroupCode();
+//      if ( ANAT_TUIS.contains( tui ) ) {
+//         return CONST.NE_TYPE_ID_ANATOMICAL_SITE;
+//      } else if ( DISO_TUIS.contains( tui ) ) {
+//         return CONST.NE_TYPE_ID_DISORDER;
+//      } else if ( FIND_TUIS.contains( tui ) ) {
+//         return CONST.NE_TYPE_ID_FINDING;
+//      } else if ( PROC_TUIS.contains( tui ) ) {
+//         return CONST.NE_TYPE_ID_PROCEDURE;
+//      } else if ( DRUG_TUIS.contains( tui ) ) {
+//         return CONST.NE_TYPE_ID_DRUG;
+//      }
+//      return CONST.NE_TYPE_ID_UNKNOWN;
    }
 
 

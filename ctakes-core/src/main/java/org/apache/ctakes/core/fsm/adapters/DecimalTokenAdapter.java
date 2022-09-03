@@ -24,20 +24,36 @@ import org.apache.ctakes.typesystem.type.syntax.NumToken;
 /**
  * Adapts JCas token annotation to interface expected by the Context Dependent
  * Tokenizer.
- * 
+ *
  * @author Mayo Clinic
- * 
  */
 public class DecimalTokenAdapter extends NumberTokenAdapter implements
-		DecimalToken
-{
+																				DecimalToken {
+
 	private double iv_val;
 
-	public DecimalTokenAdapter(NumToken nta)
-	{
-		super(nta);
+	static private final String negativeSign = "-";
 
-		iv_val = Double.parseDouble(removeCommas(nta.getCoveredText()));
+	public DecimalTokenAdapter( NumToken nta ) {
+		super( nta );
+
+
+		if ( !nta.getCoveredText()
+					.isEmpty() ) {
+			String numAsString = removeCommas( nta.getCoveredText() );
+
+			try {
+				iv_val = Double.parseDouble( numAsString );
+			} catch ( NumberFormatException nfE ) {
+				if ( numAsString.startsWith( negativeSign ) ) {
+					iv_val = -Double.MAX_VALUE;
+				} else {
+					iv_val = Double.MAX_VALUE;
+				}
+			}
+		} else {
+			iv_val = 0;
+		}
 	}
 
 	public double getValue()

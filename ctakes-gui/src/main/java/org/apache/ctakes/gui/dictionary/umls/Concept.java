@@ -1,6 +1,7 @@
 package org.apache.ctakes.gui.dictionary.umls;
 
 
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.core.util.collection.HashSetMap;
 import org.apache.ctakes.gui.dictionary.util.TextTokenizer;
 
@@ -20,12 +21,12 @@ final public class Concept {
 
    final private Map<String, Integer> _textCounts;
    final private HashSetMap<String, String> _codes;
-   final private Collection<Tui> _tuis;
+   final private Collection<SemanticTui> _tuis;
 
    public Concept() {
       _textCounts = new HashMap<>( 1 );
       _codes = new HashSetMap<>( 0 );
-      _tuis = EnumSet.noneOf( Tui.class );
+      _tuis = EnumSet.noneOf( SemanticTui.class );
    }
 
    public int addTexts( final Collection<String> texts ) {
@@ -123,15 +124,15 @@ final public class Concept {
       return codes;
    }
 
-   public void addTui( final Tui tui ) {
+   public void addTui( final SemanticTui tui ) {
       _tuis.add( tui );
    }
 
-   public Collection<Tui> getTuis() {
+   public Collection<SemanticTui> getTuis() {
       return _tuis;
    }
 
-   public boolean hasTui( final Collection<Tui> tuis ) {
+   public boolean hasTui( final Collection<SemanticTui> tuis ) {
       return _tuis.stream().anyMatch( tuis::contains );
    }
 

@@ -22,6 +22,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import com.lexicalscope.jewel.cli.CliFactory;
 import com.lexicalscope.jewel.cli.Option;
 import org.apache.ctakes.core.ae.SHARPKnowtatorXMLReader;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
@@ -55,7 +56,9 @@ import java.io.FileOutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class SHARPXMI {
+public class SHARPXMI extends CorpusXMI {
+
+   private static String BATCH_TEXT_SUBDIR = "Knowtator/text";
 
    public static List<File> getTrainTextFiles( File batchesDirectory ) {
       // seed_set1: batches 2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 16, 18, 19
@@ -66,7 +69,8 @@ public class SHARPXMI {
             batchesDirectory,
             Pattern.compile( "^(ss[1234]_batch0[2-9]|ss[1234]_batch1[56]"
                              + "|ss[1234]_batch1[89]|ss[123]_batch01"
-                             + "|ss[12]_batch1[34]|ss[34]_batch1[12])$" ) );
+                             + "|ss[12]_batch1[34]|ss[34]_batch1[12])$" ),
+              BATCH_TEXT_SUBDIR);
    }
 
    public static List<File> getDevTextFiles( File batchesDirectory ) {
@@ -74,7 +78,7 @@ public class SHARPXMI {
       // seed_set2: batches 10, 17
       // seed_set3: batches 10, 17
       // seed_set4: batches 10, 17
-      return getTextFilesFor( batchesDirectory, Pattern.compile( "^(ss[1234]_batch1[07])$" ) );
+      return getTextFilesFor( batchesDirectory, Pattern.compile( "^(ss[1234]_batch1[07])$" ), BATCH_TEXT_SUBDIR );
    }
 
    public static List<File> getTestTextFiles( File batchesDirectory ) {
@@ -84,19 +88,20 @@ public class SHARPXMI {
       // seed_set4: batches 13, 14
       return getTextFilesFor(
             batchesDirectory,
-            Pattern.compile( "^(ss[12]_batch1[12]|ss[34]_batch1[34])$" ) );
+            Pattern.compile( "^(ss[12]_batch1[12]|ss[34]_batch1[34])$" ),
+              BATCH_TEXT_SUBDIR);
    }
 
    public static List<File> getAllTextFiles( File batchesDirectory ) {
-      return getTextFilesFor( batchesDirectory, Pattern.compile( "" ) );
+      return getTextFilesFor( batchesDirectory, Pattern.compile( "" ), BATCH_TEXT_SUBDIR );
    }
 
-   private static List<File> getTextFilesFor( File batchesDirectory, Pattern pattern ) {
+   private static List<File> getTextFilesFor( File batchesDirectory, Pattern pattern, String textSubdir ) {
       List<File> files = Lists.newArrayList();
       for ( File batchDir : batchesDirectory.listFiles() ) {
          if ( batchDir.isDirectory() && !batchDir.isHidden() ) {
             if ( pattern.matcher( batchDir.getName() ).find() ) {
-               File textDirectory = new File( batchDir, "Knowtator/text" );
+               File textDirectory = new File( batchDir, textSubdir );
                for ( File textFile : textDirectory.listFiles() ) {
                   if ( textFile.isFile() && !textFile.isHidden() ) {
                      files.add( textFile );
@@ -108,151 +113,81 @@ public class SHARPXMI {
       return files;
    }
 
-   public static List<File> toXMIFiles( Options options, List<File> textFiles ) {
-      List<File> xmiFiles = Lists.newArrayList();
-      for ( File textFile : textFiles ) {
-         xmiFiles.add( toXMIFile( options, textFile ) );
-      }
-      return xmiFiles;
+   public static List<File> getTrainTextFilesFromCorpus(File corpusDirectory) {
+      return getTextFilesFor(new File(corpusDirectory, "SeedSet1/by-batch/umls"), Pattern.compile("^0[2-9]|1[3-6,8-9]"), "text");
    }
 
-   private static File toXMIFile( Options options, File textFile ) {
-      return new File( options.getXMIDirectory(), textFile.getName() + ".xmi" );
+   public static List<File> getDevTextFilesFromCorpus(File corpusDirectory) {
+      return getTextFilesFor(new File(corpusDirectory, "SeedSet1/by-batch/umls"), Pattern.compile("^1[0,7]"), "text");
    }
 
-   public static interface Options {
-      @Option(
-            longName = "batches-dir",
-            description = "directory containing ssN_batchNN directories, each of which should contain "
-                          + "a Knowtator directory and a Knowtator_XML directory")
-      public File getBatchesDirectory();
-
-      @Option(
-            longName = "xmi-dir",
-            defaultValue = "target/xmi",
-            description = "directory to store and load XMI serialization of annotations")
-      public File getXMIDirectory();
-
-      @Option(
-            longName = "generate-xmi",
-            description = "read in the gold annotations and serialize them as XMI")
-      public boolean getGenerateXMI();
+   public static List<File> getTestTextFilesFromCorpus(File corpusDirectory) {
+      return getTextFilesFor(new File(corpusDirectory, "SeedSet1/by-batch/umls"), Pattern.compile("^1[1-2]"), "text");
    }
 
-   public static final String GOLD_VIEW_NAME = "GoldView";
-
-   public static void generateXMI( Options options ) throws Exception {
+   public static void generateXMI( File xmiDirectory, File corpusDirectory, File batchesDirectory ) throws Exception {
       // if necessary, write the XMIs first
-      if ( options.getGenerateXMI() ) {
-         if ( !options.getXMIDirectory().exists() ) {
-            options.getXMIDirectory().mkdirs();
+      if ( !xmiDirectory.exists() ) {
+            xmiDirectory.mkdirs();
+      }
+
+      // create a collection reader that loads URIs for all Knowtator text files
+      List<File> files = new ArrayList<>();
+      if(corpusDirectory != null){
+         files.addAll(getTrainTextFilesFromCorpus(corpusDirectory));
+         files.addAll(getDevTextFilesFromCorpus(corpusDirectory));
+         files.addAll(getTestTextFilesFromCorpus(corpusDirectory));
+      }else if(batchesDirectory != null) {
+         files.addAll(getTrainTextFiles(batchesDirectory));
+         files.addAll(getDevTextFiles(batchesDirectory));
+         files.addAll(getTestTextFiles(batchesDirectory));
+      }else{
+         throw new RuntimeException("Either the corpus-dir or batches-dir option must be set.");
+      }
+
+      CollectionReader reader = UriCollectionReader.getCollectionReaderFromFiles(files);
+      // load the text from the URI, run the preprocessor, then run the
+      // Knowtator XML reader
+      AggregateBuilder builder = new AggregateBuilder();
+      builder.add( UriToDocumentTextAnnotator.getDescription() );
+      File preprocessDescFile = new File( "desc/analysis_engine/RelationExtractorPreprocessor.xml" );
+      XMLParser parser = UIMAFramework.getXMLParser();
+      XMLInputSource source = new XMLInputSource( preprocessDescFile );
+      builder.add( parser.parseAnalysisEngineDescription( source ) );
+      builder.add( AnalysisEngineFactory.createEngineDescription(
+              ViewCreatorAnnotator.class,
+              ViewCreatorAnnotator.PARAM_VIEW_NAME,
+              GOLD_VIEW_NAME ) );
+      builder.add( AnalysisEngineFactory.createEngineDescription( CopyDocumentTextToGoldView.class ) );
+      builder.add(
+              AnalysisEngineFactory.createEngineDescription( DocumentIDAnnotator.class ),
+              CAS.NAME_DEFAULT_SOFA,
+              GOLD_VIEW_NAME );
+      builder.add(
+              AnalysisEngineFactory.createEngineDescription( SHARPKnowtatorXMLReader.class,
+                      SHARPKnowtatorXMLReader.PARAM_SET_DEFAULTS,
+                      true ),
+              CAS.NAME_DEFAULT_SOFA,
+              GOLD_VIEW_NAME );
+
+      // write out an XMI for each file
+      for ( Iterator<JCas> casIter = new JCasIterator( reader, builder.createAggregate() ); casIter.hasNext(); ) {
+         JCas jCas = casIter.next();
+         JCas goldView = jCas.getView(GOLD_VIEW_NAME);
+         String documentID = DocumentIDAnnotationUtil.getDocumentID(goldView);
+         if (documentID == null) {//|| documentID.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
+            throw new IllegalArgumentException("No documentID for CAS:\n" + jCas);
          }
-
-         // create a collection reader that loads URIs for all Knowtator text files
-         List<File> files = Lists.newArrayList();
-         files.addAll( getTrainTextFiles( options.getBatchesDirectory() ) );
-         files.addAll( getDevTextFiles( options.getBatchesDirectory() ) );
-         files.addAll( getTestTextFiles( options.getBatchesDirectory() ) );
-         CollectionReader reader = UriCollectionReader.getCollectionReaderFromFiles( files );
-
-         // load the text from the URI, run the preprocessor, then run the
-         // Knowtator XML reader
-         AggregateBuilder builder = new AggregateBuilder();
-         builder.add( UriToDocumentTextAnnotator.getDescription() );
-         File preprocessDescFile = new File( "desc/analysis_engine/RelationExtractorPreprocessor.xml" );
-         XMLParser parser = UIMAFramework.getXMLParser();
-         XMLInputSource source = new XMLInputSource( preprocessDescFile );
-         builder.add( parser.parseAnalysisEngineDescription( source ) );
-         builder.add( AnalysisEngineFactory.createEngineDescription(
-               ViewCreatorAnnotator.class,
-               ViewCreatorAnnotator.PARAM_VIEW_NAME,
-               GOLD_VIEW_NAME ) );
-         builder.add( AnalysisEngineFactory.createEngineDescription( CopyDocumentTextToGoldView.class ) );
-         builder.add(
-               AnalysisEngineFactory.createEngineDescription( DocumentIDAnnotator.class ),
-               CAS.NAME_DEFAULT_SOFA,
-               GOLD_VIEW_NAME );
-         builder.add(
-               AnalysisEngineFactory.createEngineDescription( SHARPKnowtatorXMLReader.class,
-                     SHARPKnowtatorXMLReader.PARAM_SET_DEFAULTS,
-                     true ),
-               CAS.NAME_DEFAULT_SOFA,
-               GOLD_VIEW_NAME );
-
-         // write out an XMI for each file
-         for ( Iterator<JCas> casIter = new JCasIterator( reader, builder.createAggregate() ); casIter.hasNext(); ) {
-            JCas jCas = casIter.next();
-            JCas goldView = jCas.getView( GOLD_VIEW_NAME );
-            String documentID = DocumentIDAnnotationUtil.getDocumentID( goldView );
-            if ( documentID == null ){//|| documentID.equals( DocumentIDAnnotationUtil.NO_DOCUMENT_ID ) ) {
-               throw new IllegalArgumentException( "No documentID for CAS:\n" + jCas );
-            }
-            File outFile = toXMIFile( options, new File( documentID ) );
-            FileOutputStream stream = new FileOutputStream( outFile );
-            ContentHandler handler = new XMLSerializer( stream ).getContentHandler();
-            new XmiCasSerializer( jCas.getTypeSystem() ).serialize( jCas.getCas(), handler );
-            stream.close();
-         }
+         File outFile = toXMIFile(xmiDirectory, new File(documentID));
+         FileOutputStream stream = new FileOutputStream(outFile);
+         ContentHandler handler = new XMLSerializer(stream).getContentHandler();
+         new XmiCasSerializer(jCas.getTypeSystem()).serialize(jCas.getCas(), handler);
+         stream.close();
       }
    }
 
-   public enum EvaluateOn {
-      TRAIN, DEV, TEST, OTHER
-   }
-
-   public static interface EvaluationOptions extends Options {
-      @Option(
-            longName = "evaluate-on",
-            defaultValue = "DEV",
-            description = "perform evaluation using the training (TRAIN), development (DEV) or test "
-                          + "(TEST) data.")
-      public EvaluateOn getEvaluteOn();
-
-      @Option(
-            longName = "grid-search",
-            description = "run a grid search to select the best parameters")
-      public boolean getGridSearch();
-      
-      @Option(
-          defaultToNull=true,
-          longName = "train-xmi-dir",
-          description = "use these XMI files for training; they must contain the necessary preprocessing " 
-              + "in system view and gold annotation in gold view")
-      public File getTrainXmiDir();
-      
-      @Option(
-          longName = "test-xmi-dir",
-          defaultValue = "",
-          description = "evaluate on these XMI files; they must contain the necessary preprocessing " 
-              + "in system view and gold annotation in gold view")
-      public File getTestXmiDir();
-   }
-
-   public static abstract class Evaluation_ImplBase
-         extends org.cleartk.eval.Evaluation_ImplBase<File, AnnotationStatistics<String>> {
-
-      public Evaluation_ImplBase( File baseDirectory ) {
-         super( baseDirectory );
-      }
-
-      @Override
-      public CollectionReader getCollectionReader( List<File> items ) throws Exception {
-         return CollectionReaderFactory.createReader(
-               XMIReader.class,
-               TypeSystemDescriptionFactory.createTypeSystemDescription(),
-               XMIReader.PARAM_FILES,
-               items );
-      }
-   }
-
-   public static void validate( EvaluationOptions options ) throws Exception {
-      // error on invalid option combinations
-      if ( options.getEvaluteOn().equals( EvaluateOn.TEST ) && options.getGridSearch() ) {
-         throw new IllegalArgumentException( "grid search can only be run on the train or dev sets" );
-      }
-   }
-
-   public static <T extends Evaluation_ImplBase> void evaluate(
+   /*
+   public static <T extends RelationEvaluation_ImplBase> void evaluate(
          EvaluationOptions options,
          ParameterSettings bestSettings,
          List<ParameterSettings> gridOfSettings,
@@ -268,30 +203,50 @@ public class SHARPXMI {
       // run an evaluation for each set of parameters
       Map<ParameterSettings, Double> scoredParams = new HashMap<>();
       for ( ParameterSettings params : possibleParams ) {
-         Evaluation_ImplBase evaluation = getEvaluation.apply( params );
+         RelationEvaluation_ImplBase evaluation = getEvaluation.apply( params );
 
          List<File> trainFiles, devFiles, testFiles;
          switch ( options.getEvaluteOn() ) {
             case TRAIN:
                // run n-fold cross-validation on the training set
-               trainFiles = getTrainTextFiles( options.getBatchesDirectory() );
+               if(options.getCorpusDirectory() != null){
+                  trainFiles = getTrainTextFilesFromCorpus(options.getCorpusDirectory());
+               }else if(options.getBatchesDirectory() != null) {
+                  trainFiles = getTrainTextFiles(options.getBatchesDirectory());
+               }else{
+                  throw new RuntimeException("Either corpus-dir or batch-dir must have an argument.");
+               }
                trainFiles = toXMIFiles( options, trainFiles );
                List<AnnotationStatistics<String>> foldStats = evaluation.crossValidation( trainFiles, 2 );
                params.stats = AnnotationStatistics.addAll( foldStats );
                break;
             case DEV:
                // train on the training set and evaluate on the dev set
-               trainFiles = getTrainTextFiles( options.getBatchesDirectory() );
+               if(options.getCorpusDirectory() != null){
+                  trainFiles = getTrainTextFilesFromCorpus(options.getCorpusDirectory());
+                  devFiles = getDevTextFilesFromCorpus(options.getCorpusDirectory());
+               }else if(options.getBatchesDirectory() != null) {
+                  trainFiles = getTrainTextFiles(options.getBatchesDirectory());
+                  devFiles = getDevTextFiles( options.getBatchesDirectory() );
+               }else{
+                  throw new RuntimeException("Either corpus-dir or batch-dir must have an argument.");
+               }
                trainFiles = toXMIFiles( options, trainFiles );
-               devFiles = getDevTextFiles( options.getBatchesDirectory() );
                devFiles = toXMIFiles( options, devFiles );
                params.stats = evaluation.trainAndTest( trainFiles, devFiles );
                break;
             case TEST:
                // train on the training set + dev set and evaluate on the test set
                List<File> allTrainFiles = new ArrayList<>();
-               allTrainFiles.addAll( getTrainTextFiles( options.getBatchesDirectory() ) );
-               allTrainFiles.addAll( getDevTextFiles( options.getBatchesDirectory() ) );
+               if(options.getCorpusDirectory() != null){
+                 allTrainFiles.addAll( getTrainTextFilesFromCorpus(options.getCorpusDirectory()));
+                 allTrainFiles.addAll( getDevTextFilesFromCorpus(options.getCorpusDirectory()));
+               }else if(options.getBatchesDirectory() != null) {
+                  allTrainFiles.addAll(getTrainTextFiles(options.getBatchesDirectory()));
+                  allTrainFiles.addAll(getDevTextFiles(options.getBatchesDirectory()));
+               }else{
+                  throw new RuntimeException("Either corpus-dir or batch-dir must have an argument.");
+               }
                allTrainFiles = toXMIFiles( options, allTrainFiles );
                testFiles = getTestTextFiles( options.getBatchesDirectory() );
                testFiles = toXMIFiles( options, testFiles );
@@ -356,6 +311,7 @@ public class SHARPXMI {
          System.err.println();
       }
    }
+*/
 
    public static class DocumentIDAnnotator extends JCasAnnotator_ImplBase {
 
@@ -369,9 +325,9 @@ public class SHARPXMI {
    }
 
    @PipeBitInfo(
-         name = "Text to Gold Copier",
-         description = "Copies Text from the System view to the Gold view.",
-         role = PipeBitInfo.Role.SPECIAL
+           name = "Text to Gold Copier",
+           description = "Copies Text from the System view to the Gold view.",
+           role = PipeBitInfo.Role.SPECIAL
    )
    public static class CopyDocumentTextToGoldView extends JCasAnnotator_ImplBase {
       @Override

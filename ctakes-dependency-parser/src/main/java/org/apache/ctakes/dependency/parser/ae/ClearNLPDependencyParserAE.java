@@ -127,6 +127,12 @@ public class ClearNLPDependencyParserAE extends JCasAnnotator_ImplBase {
          description = "If true, use the default ClearNLP lemmatizer, otherwise use lemmas from the BaseToken normalizedToken field" )
    private boolean useLemmatizer;
 
+   public static final String PARAM_MAX_TOKENS = "MaxTokens";
+   @ConfigurationParameter(name = PARAM_MAX_TOKENS,
+           mandatory=false,
+           description="The maximum length sentence to parse. Longer sentences will have a basic dependency structure created where every node's head is the sentence node.")
+   private int maxTokens=-1;
+
    public static final String DEP_MODEL_KEY = "DepModel";
    @ExternalResource( key = DEP_MODEL_KEY, mandatory = false )
    private DependencySharedModel parserModel = null;
@@ -187,14 +193,18 @@ public class ClearNLPDependencyParserAE extends JCasAnnotator_ImplBase {
          // Convert CAS data into structures usable by ClearNLP
          for ( int i = 0; i < printableTokens.size(); i++ ) {
             BaseToken token = printableTokens.get( i );
-            String lemma = useLemmatizer ? lemmatizer.getLemma( token.getCoveredText(), token.getPartOfSpeech() ) : token.getNormalizedForm();
+            String lemma = useLemmatizer ? lemmatizer.getLemma( token.getCoveredText(), token.getPartOfSpeech() )
+                                         : token.getNormalizedForm();
             DEPNode node = new DEPNode( i + 1, token.getCoveredText(), lemma, token.getPartOfSpeech(), new DEPFeat() );
+            // in case we don't end up actually processing, point everyone at the root - created in DEPTree::new.
+            node.setHead( tree.get( 0 ) );
+            node.setLabel( "root" );
             tree.add( node );
          }
 
          // Run parser and convert output back to CAS friendly data types
          synchronized(LOCK){
-           parser.process( tree );
+           if(this.maxTokens <=0 || printableTokens.size() <= this.maxTokens) parser.process( tree );
            ArrayList<ConllDependencyNode> nodes = ClearDependencyUtility.convert( jCas, tree, sentence, printableTokens );
            DependencyUtility.addToIndexes( jCas, nodes );
          }
@@ -210,6 +220,17 @@ public class ClearNLPDependencyParserAE extends JCasAnnotator_ImplBase {
    // If someone calls this, they want the default model, lazy initialization of the external resources:
    public static synchronized AnalysisEngineDescription createAnnotatorDescription() throws ResourceInitializationException {
       return createAnnotatorDescription( defaultParserResource, defaultLemmatizerResource );
+   }
+
+   public static synchronized AnalysisEngineDescription createAnnotatorDescription(int maxTokens) throws ResourceInitializationException {
+      return AnalysisEngineFactory.createEngineDescription(
+              ClearNLPDependencyParserAE.class,
+              DEP_MODEL_KEY,
+              defaultParserResource,
+              LEM_MODEL_KEY,
+              defaultLemmatizerResource,
+              PARAM_MAX_TOKENS,
+              maxTokens);
    }
 
    public static AnalysisEngineDescription createAnnotatorDescription( ExternalResourceDescription parserDesc, ExternalResourceDescription lemmaDesc ) throws ResourceInitializationException {

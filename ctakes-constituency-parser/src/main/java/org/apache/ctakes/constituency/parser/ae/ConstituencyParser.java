@@ -22,7 +22,7 @@ import org.apache.ctakes.constituency.parser.MaxentParserWrapper;
 import org.apache.ctakes.constituency.parser.ParserWrapper;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.DotLogger;
+import org.apache.ctakes.core.util.log.DotLogger;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -52,6 +52,12 @@ public class ConstituencyParser extends JCasAnnotator_ImplBase {
 			defaultValue = "org/apache/ctakes/constituency/parser/models/sharpacq-3.1.bin"
 	)
 	private String modelFilename;
+
+	public static final String PARAM_MAX_TOKENS = "MaxTokens";
+	@ConfigurationParameter(name = PARAM_MAX_TOKENS,
+				description = "The token limit for sentences we actually parse. Longer sentences will be ignored.",
+				mandatory = false)
+	private int maxTokens = -1;
 	
 	
 	private ParserWrapper parser = null;
@@ -62,7 +68,7 @@ public class ConstituencyParser extends JCasAnnotator_ImplBase {
 		super.initialize( aContext );
 		logger.info( "Initializing ..." );
 		try ( DotLogger dotter = new DotLogger() ) {
-			parser = new MaxentParserWrapper( FileLocator.getAsStream( modelFilename ) );
+			parser = new MaxentParserWrapper( FileLocator.getAsStream( modelFilename ), this.maxTokens );
 		} catch ( IOException ioE ) {
 			logger.error( "Error reading parser model file/directory: " + ioE.getMessage() );
 			throw new ResourceInitializationException( ioE );
@@ -83,6 +89,14 @@ public class ConstituencyParser extends JCasAnnotator_ImplBase {
 		    		ConstituencyParser.PARAM_MODEL_FILENAME,
 		        modelPath);
 		  }
+
+	  public static AnalysisEngineDescription createAnnotatorDescription(int maxTokens) throws ResourceInitializationException {
+			return AnalysisEngineFactory.createEngineDescription(
+					ConstituencyParser.class,
+					ConstituencyParser.PARAM_MAX_TOKENS,
+					maxTokens);
+	  }
+
 	  public static AnalysisEngineDescription createAnnotatorDescription() 
 			  throws ResourceInitializationException {
 		    return AnalysisEngineFactory.createEngineDescription(

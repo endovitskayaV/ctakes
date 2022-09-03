@@ -6,7 +6,7 @@ import org.apache.ctakes.core.patient.PatientNoteCollector;
 import org.apache.ctakes.core.patient.PatientNoteStore;
 import org.apache.ctakes.core.patient.PatientViewUtil;
 import org.apache.ctakes.core.util.ListFactory;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.ctakes.coreference.eval.EvaluationOfEventCoreference;
 import org.apache.ctakes.coreference.util.ThymeCasOrderer;
 import org.apache.ctakes.temporal.eval.Evaluation_ImplBase;
@@ -46,8 +46,6 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Created by tmill on 2/22/18.

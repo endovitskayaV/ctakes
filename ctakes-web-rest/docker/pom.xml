@@ -184,6 +184,7 @@
 		<module>ctakes-core-res</module>
 		<module>ctakes-coreference-res</module>
 		<module>ctakes-dependency-parser-res</module>
+		<module>ctakes-dependency-parser-res-clear</module>
 		<module>ctakes-dictionary-lookup-res</module>
 		<module>ctakes-lvg-res</module>
 		<module>ctakes-pos-tagger-res</module>
@@ -752,6 +753,13 @@
 			<dependency>
 				<groupId>org.apache.ctakes</groupId>
 				<artifactId>
+					ctakes-dependency-parser-res-clear
+				</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.ctakes</groupId>
+				<artifactId>
 					ctakes-relation-extractor
 				</artifactId>
 				<version>${project.version}</version>
@@ -989,8 +997,9 @@
                      		<additionalClasspathElement>ctakes-constituency-parser-res/src/main/resources</additionalClasspathElement>
 						    <additionalClasspathElement>ctakes-core-res/src/main/resources</additionalClasspathElement>
 						    <additionalClasspathElement>ctakes-coreference-res/src/main/resources</additionalClasspathElement>
-						    <additionalClasspathElement>ctakes-dependency-parser-res/src/main/resources</additionalClasspathElement>	
-						    <additionalClasspathElement>ctakes-dictionary-lookup-res/src/main/resources</additionalClasspathElement>
+							<additionalClasspathElement>ctakes-dependency-parser-res/src/main/resources</additionalClasspathElement>
+							<additionalClasspathElement>ctakes-dependency-parser-res-clear/src/main/resources</additionalClasspathElement>
+							<additionalClasspathElement>ctakes-dictionary-lookup-res/src/main/resources</additionalClasspathElement>
 						    <additionalClasspathElement>ctakes-drug-ner-res/src/main/resources</additionalClasspathElement>						    						    					    						    						    						    						    
 						    <additionalClasspathElement>ctakes-lvg-res/src/main/resources</additionalClasspathElement>
 						    <additionalClasspathElement>ctakes-ne-contexts-res/src/main/resources</additionalClasspathElement>

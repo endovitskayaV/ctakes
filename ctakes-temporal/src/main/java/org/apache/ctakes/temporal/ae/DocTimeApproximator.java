@@ -1,7 +1,7 @@
 package org.apache.ctakes.temporal.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.ctakes.temporal.utils.CalendarUtil;
 import org.apache.ctakes.typesystem.type.structured.SourceData;
 import org.apache.ctakes.typesystem.type.textsem.DateAnnotation;

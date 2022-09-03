@@ -32,6 +32,7 @@ import java.util.Map;
  * Created by tmill on 12/20/18.
  */
 public class CuiResponse {
+    final private String _type;
     public int begin;
     public int end;
     public String text;
@@ -39,6 +40,7 @@ public class CuiResponse {
     public List<Map<String,String>> conceptAttributes = new ArrayList<>();
 
     public CuiResponse(Annotation annotation){
+        _type = annotation.getClass().getSimpleName();
         begin = annotation.getBegin();
         end = annotation.getEnd();
         text = annotation.getCoveredText();
@@ -51,11 +53,16 @@ public class CuiResponse {
                     Map<String, String> atts = new HashMap<>();
                     atts.put("codingScheme", concept.getCodingScheme());
                     atts.put("cui", concept.getCui());
-                    atts.put("code", concept.getCode());
+                    atts.put("code", concept.getCode() == null ? "n/a" : concept.getCode());
                     atts.put("tui", concept.getTui());
                     conceptAttributes.add(atts);
                 }
             }
         }
     }
+
+    final public String getType() {
+        return _type;
+    }
+
 }

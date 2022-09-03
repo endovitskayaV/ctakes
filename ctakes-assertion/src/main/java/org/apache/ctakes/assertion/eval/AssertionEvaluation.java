@@ -18,45 +18,19 @@
  */
 package org.apache.ctakes.assertion.eval;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.ctakes.assertion.attributes.features.selection.FeatureSelection;
 import org.apache.ctakes.assertion.medfacts.ConceptConverterAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.AlternateCuePhraseAnnotator;
-import org.apache.ctakes.assertion.medfacts.cleartk.AssertionCleartkAnalysisEngine;
+import org.apache.ctakes.assertion.medfacts.cleartk.*;
 import org.apache.ctakes.assertion.medfacts.cleartk.AssertionCleartkAnalysisEngine.FEATURE_CONFIG;
-import org.apache.ctakes.assertion.medfacts.cleartk.ConditionalCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.GenericCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.HistoryCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.PolarityCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.PolarityFedaCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.SubjectCleartkAnalysisEngine;
-import org.apache.ctakes.assertion.medfacts.cleartk.UncertaintyCleartkAnalysisEngine;
 import org.apache.ctakes.assertion.pipelines.GoldEntityAndAttributeReaderPipelineForSeedCorpus;
 import org.apache.ctakes.core.ae.DocumentIdPrinterAnalysisEngine;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.constants.CONST;
-import org.apache.ctakes.typesystem.type.syntax.BaseToken;
-import org.apache.ctakes.typesystem.type.syntax.ContractionToken;
-import org.apache.ctakes.typesystem.type.syntax.NewlineToken;
-import org.apache.ctakes.typesystem.type.syntax.NumToken;
-import org.apache.ctakes.typesystem.type.syntax.PunctuationToken;
-import org.apache.ctakes.typesystem.type.syntax.SymbolToken;
-import org.apache.ctakes.typesystem.type.syntax.WordToken;
+import org.apache.ctakes.typesystem.type.syntax.*;
 import org.apache.ctakes.typesystem.type.textsem.EntityMention;
 import org.apache.ctakes.typesystem.type.textsem.EventMention;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
@@ -73,11 +47,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.collection.CollectionReader;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.component.NoOpAnnotator;
-import org.apache.uima.fit.factory.AggregateBuilder;
-import org.apache.uima.fit.factory.AnalysisEngineFactory;
-import org.apache.uima.fit.factory.CollectionReaderFactory;
-import org.apache.uima.fit.factory.ConfigurationParameterFactory;
-import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
+import org.apache.uima.fit.factory.*;
 import org.apache.uima.fit.pipeline.JCasIterator;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.CasIOUtil;
@@ -103,10 +73,12 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.BooleanOptionHandler;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 public class AssertionEvaluation extends Evaluation_ImplBase<File, Map<String, AnnotationStatisticsCompact<String>>> {
   
@@ -916,7 +888,7 @@ public static void printScore(Map<String, AnnotationStatisticsCompact<String>> m
 //      System.out.format("system entities: %d%nsystem events: %d%n%n", systemEntities.size(), systemEvents.size());
       
       if (evaluationOutputDirectory != null){
-          String sourceFileName = DocumentIDAnnotationUtil.getDocumentID(jCas);
+         String sourceFileName = DocIdUtil.getDocumentID( jCas );
           CasIOUtil.writeXmi(jCas, new File(evaluationOutputDirectory, sourceFileName + ".xmi"));
       }
       
@@ -1065,7 +1037,7 @@ private static void printErrors(JCas jCas,
 		  Collection<IdentifiedAnnotation> goldEntitiesAndEvents,
 		  Collection<IdentifiedAnnotation> systemEntitiesAndEvents, String classifierType, Object trueCategory, Class<? extends Object> categoryClass) throws ResourceProcessException {
 
-	String documentId = DocumentIDAnnotationUtil.getDocumentID(jCas);
+   String documentId = DocIdUtil.getDocumentID( jCas );
 	
 	  Map<HashableAnnotation, IdentifiedAnnotation> goldMap = Maps.newHashMap();
 	  for (IdentifiedAnnotation mention : goldEntitiesAndEvents) {
@@ -1142,7 +1114,7 @@ private static void printInstances(JCas jCas,
 		  File outputfile) 
 				  throws ResourceProcessException, IOException {
 
-	String documentId = DocumentIDAnnotationUtil.getDocumentID(jCas);
+   String documentId = DocIdUtil.getDocumentID( jCas );
 	  Map<HashableAnnotation, IdentifiedAnnotation> goldMap = Maps.newHashMap();
 	  for (IdentifiedAnnotation mention : goldEntitiesAndEvents) {
 		  goldMap.put(new HashableAnnotation(mention), mention);

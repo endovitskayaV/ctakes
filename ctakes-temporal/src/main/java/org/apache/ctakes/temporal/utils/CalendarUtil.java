@@ -26,6 +26,7 @@ import static java.util.Calendar.*;
  * @author SPF , chip-nlp
  * @version %I%
  * @since 1/8/2019
+ * @deprecated use CalendarUtil in core.util
  */
 final public class CalendarUtil {
 

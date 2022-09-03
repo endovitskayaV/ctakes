@@ -1,8 +1,8 @@
 package org.apache.ctakes.core.cc;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
 import org.apache.ctakes.core.util.JCasUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.ctakes.typesystem.type.syntax.NewlineToken;
 import org.apache.log4j.Logger;
@@ -99,7 +99,7 @@ public class SentenceTokensPrinter extends CasConsumer_ImplBase {
          // JCasHashMap will throw this every once in a while.  Assume the sentences are done and move on
          LOGGER.warn( iobE.getMessage() );
       }
-      final String documentId = DocumentIDAnnotationUtil.getDocumentID( jcas );
+      final String documentId = DocIdUtil.getDocumentID( jcas );
       outputSentenceTokens( documentId, tokenizedSentences );
    }
 

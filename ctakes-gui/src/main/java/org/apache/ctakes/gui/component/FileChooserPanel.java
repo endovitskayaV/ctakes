@@ -37,7 +37,7 @@ final public class FileChooserPanel extends JPanel {
       super( new BorderLayout( 10, 10 ) );
       setBorder( new EmptyBorder( 2, 10, 2, 10 ) );
       final JLabel label = new JLabel( name );
-      label.setPreferredSize( new Dimension( 100, 0 ) );
+      label.setPreferredSize( new Dimension( 150, 0 ) );
       label.setHorizontalAlignment( SwingConstants.TRAILING );
       final JTextField textField = new JTextField( defaultDirectory );
       textField.setEditable( false );

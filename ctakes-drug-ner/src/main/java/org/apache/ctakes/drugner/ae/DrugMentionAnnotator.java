@@ -18,99 +18,26 @@
  */
 package org.apache.ctakes.drugner.ae;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 import org.apache.ctakes.core.ae.TokenizerAnnotator;
-import org.apache.ctakes.core.fsm.adapters.ContractionTokenAdapter;
-import org.apache.ctakes.core.fsm.adapters.DecimalTokenAdapter;
-import org.apache.ctakes.core.fsm.adapters.IntegerTokenAdapter;
-import org.apache.ctakes.core.fsm.adapters.NewlineTokenAdapter;
-import org.apache.ctakes.core.fsm.adapters.PunctuationTokenAdapter;
-import org.apache.ctakes.core.fsm.adapters.SymbolTokenAdapter;
-import org.apache.ctakes.core.fsm.adapters.WordTokenAdapter;
+import org.apache.ctakes.core.fsm.adapters.*;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DateParser;
+import org.apache.ctakes.core.util.CalendarUtil;
 import org.apache.ctakes.core.util.FSUtil;
 import org.apache.ctakes.core.util.JCasUtil;
 import org.apache.ctakes.core.util.ParamUtil;
 import org.apache.ctakes.drugner.DrugMention;
 import org.apache.ctakes.drugner.elements.DrugChangeStatusElement;
-import org.apache.ctakes.drugner.fsm.machines.elements.DecimalStrengthFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.DosagesFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.DrugChangeStatusFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.DurationFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.FormFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.FractionStrengthFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.FrequencyFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.FrequencyUnitFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.RangeStrengthFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.RouteFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.StrengthFSM;
-import org.apache.ctakes.drugner.fsm.machines.elements.StrengthUnitFSM;
+import org.apache.ctakes.drugner.fsm.machines.elements.*;
 import org.apache.ctakes.drugner.fsm.machines.util.SubSectionIndicatorFSM;
 import org.apache.ctakes.drugner.fsm.machines.util.SuffixStrengthFSM;
-import org.apache.ctakes.drugner.fsm.output.elements.BaseTokenImpl;
-import org.apache.ctakes.drugner.fsm.output.elements.DosageToken;
-import org.apache.ctakes.drugner.fsm.output.elements.DrugChangeStatusToken;
-import org.apache.ctakes.drugner.fsm.output.elements.DurationToken;
-import org.apache.ctakes.drugner.fsm.output.elements.FormToken;
-import org.apache.ctakes.drugner.fsm.output.elements.FrequencyToken;
-import org.apache.ctakes.drugner.fsm.output.elements.FrequencyUnitToken;
-import org.apache.ctakes.drugner.fsm.output.elements.RouteToken;
-import org.apache.ctakes.drugner.fsm.output.elements.StrengthToken;
-import org.apache.ctakes.drugner.fsm.output.elements.StrengthUnitCombinedToken;
-import org.apache.ctakes.drugner.fsm.output.elements.StrengthUnitToken;
+import org.apache.ctakes.drugner.fsm.output.elements.*;
 import org.apache.ctakes.drugner.fsm.output.util.SubSectionIndicator;
 import org.apache.ctakes.drugner.fsm.output.util.SuffixStrengthToken;
-import org.apache.ctakes.drugner.type.ChunkAnnotation;
-import org.apache.ctakes.drugner.type.DecimalStrengthAnnotation;
-import org.apache.ctakes.drugner.type.DosagesAnnotation;
-import org.apache.ctakes.drugner.type.DrugChangeStatusAnnotation;
-import org.apache.ctakes.drugner.type.DrugMentionAnnotation;
-import org.apache.ctakes.drugner.type.DurationAnnotation;
-import org.apache.ctakes.drugner.type.FormAnnotation;
-import org.apache.ctakes.drugner.type.FractionStrengthAnnotation;
-import org.apache.ctakes.drugner.type.FrequencyAnnotation;
-import org.apache.ctakes.drugner.type.FrequencyUnitAnnotation;
-import org.apache.ctakes.drugner.type.RangeStrengthAnnotation;
-import org.apache.ctakes.drugner.type.RouteAnnotation;
-import org.apache.ctakes.drugner.type.StrengthAnnotation;
-import org.apache.ctakes.drugner.type.StrengthUnitAnnotation;
-import org.apache.ctakes.drugner.type.SubSectionAnnotation;
-import org.apache.ctakes.drugner.type.SuffixStrengthAnnotation;
+import org.apache.ctakes.drugner.type.*;
 import org.apache.ctakes.typesystem.type.constants.CONST;
-import org.apache.ctakes.typesystem.type.refsem.Date;
-import org.apache.ctakes.typesystem.type.refsem.MedicationDosage;
-import org.apache.ctakes.typesystem.type.refsem.MedicationDuration;
-import org.apache.ctakes.typesystem.type.refsem.MedicationForm;
-import org.apache.ctakes.typesystem.type.refsem.MedicationFrequency;
-import org.apache.ctakes.typesystem.type.refsem.MedicationRoute;
-import org.apache.ctakes.typesystem.type.refsem.MedicationStatusChange;
-import org.apache.ctakes.typesystem.type.refsem.MedicationStrength;
-import org.apache.ctakes.typesystem.type.refsem.OntologyConcept;
-import org.apache.ctakes.typesystem.type.syntax.BaseToken;
-import org.apache.ctakes.typesystem.type.syntax.ContractionToken;
-import org.apache.ctakes.typesystem.type.syntax.NewlineToken;
-import org.apache.ctakes.typesystem.type.syntax.NumToken;
-import org.apache.ctakes.typesystem.type.syntax.PunctuationToken;
-import org.apache.ctakes.typesystem.type.syntax.SymbolToken;
-import org.apache.ctakes.typesystem.type.syntax.WordToken;
-import org.apache.ctakes.typesystem.type.textsem.DateAnnotation;
-import org.apache.ctakes.typesystem.type.textsem.MedicationDosageModifier;
-import org.apache.ctakes.typesystem.type.textsem.MedicationDurationModifier;
-import org.apache.ctakes.typesystem.type.textsem.MedicationFormModifier;
-import org.apache.ctakes.typesystem.type.textsem.MedicationFrequencyModifier;
-import org.apache.ctakes.typesystem.type.textsem.MedicationMention;
-import org.apache.ctakes.typesystem.type.textsem.MedicationRouteModifier;
-import org.apache.ctakes.typesystem.type.textsem.MedicationStatusChangeModifier;
-import org.apache.ctakes.typesystem.type.textsem.MedicationStrengthModifier;
-import org.apache.ctakes.typesystem.type.textsem.TimeMention;
+import org.apache.ctakes.typesystem.type.refsem.*;
+import org.apache.ctakes.typesystem.type.syntax.*;
+import org.apache.ctakes.typesystem.type.textsem.*;
 import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.ctakes.typesystem.type.textspan.Sentence;
 import org.apache.log4j.Logger;
@@ -123,8 +50,9 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
-import org.apache.uima.resource.ResourceAccessException;
 import org.apache.uima.resource.ResourceInitializationException;
+
+import java.util.*;
 
 
 /**
@@ -404,13 +332,15 @@ public class DrugMentionAnnotator extends JCasAnnotator_ImplBase
 			medicationMention.setMedicationStrength(modifier);
 		}
 
-		if (fromAnnotation.getStartDate()!=null) {
-			Date d = DateParser.parse(jcas, fromAnnotation.getStartDate());
-			TimeMention timeMention = new TimeMention(jcas);
-			timeMention.setDate(d);
-			timeMention.setTimeClass(CONST.TIME_CLASS_DATE);
+      if ( fromAnnotation.getStartDate() != null ) {
+//			Date d = DateParser.parse(jcas, fromAnnotation.getStartDate());
+//			TimeMention timeMention = new TimeMention(jcas);
+//			timeMention.setDate(d);
+//			timeMention.setTimeClass(CONST.TIME_CLASS_DATE);
 			// if (d!=null) d.addToIndexes(); // don't need to be able to get these directly from the AnnotationIndex
-			if (d!=null) medicationMention.setStartDate(timeMention);
+//			if (d!=null) medicationMention.setStartDate(timeMention);
+         final TimeMention timeMention = CalendarUtil.createTimeMention( jcas, fromAnnotation.getStartDate() );
+         medicationMention.setStartDate( timeMention );
 		}
 		// Add fix CTAKES-129 Populate the Drug NER named entity confidence attribute 
 		if (fromAnnotation.getConfidence() != 0.0 ) {

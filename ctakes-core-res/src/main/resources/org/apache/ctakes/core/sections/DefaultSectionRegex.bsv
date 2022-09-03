@@ -1,7 +1,7 @@
 History of Present Illness||^[\t ]*(?:(?:CC\/HPI:)|(?:S:)|(?:(?:HISTORY OF (?:THE )?(?:PRESENT |PHYSICAL )?ILLNESS)(?: \(HPI(?:, PROBLEM BY PROBLEM)?\))?[\t ]*:?))[\t ]*$
-Past Medical History||^[\t ]*(?:(?:HISTORY OF (?:THE )?PAST ILLNESS)|(?:PAST MEDICAL HISTORY))[\t ]*:?[\t ]*$
+Past Medical History||^[\t ]*(?:(?:PMHX?)|(?:HISTORY OF (?:THE )?PAST ILLNESS)|(?:PAST MEDICAL HISTORY))[\t ]*:?[\t ]*$
 Chief Complaint||^[\t ]*(?:CHIEF|PRIMARY) COMPLAINTS?[\t ]*:?[\t ]*$
-Patient History||^[\t ]*(?:(?:(?:PERSONAL|PATIENT) (?:(?:AND )?SOCIAL )?HISTORY)|(?:(?:PSYCHO)?SOC(?:IAL)? HISTORY)|(?:HISTORY (?:OF )(?:OTHER )?SOCIAL (?:FUNCTIONs?|FACTORS?))|(?:PSO)|(?:P?SHX))[\t ]*:?[\t ]*$
+Patient History||^[\t ]*(?:(?:PERSONAL|PATIENT) (?:(?:AND )?SOCIAL )?HISTORY)|(?:(?:PSYCHO)?SOC(?:IAL)? HISTORY)|(?:HISTORY (?:OF )(?:OTHER )?SOCIAL (?:FUNCTIONs?|FACTORS?))|(?:PSO)|(?:P?SHX)|(?:HISTORY:)[\t ]*:?[\t ]*$
 Review of Systems||^[\t ]*(?:(?:ROS:)|(?:(?:REVIEW (?:OF )?SYSTEMS?)|(?:SYSTEMS? REVIEW)[\t ]*:?))[\t ]*$
 Family Medical History||^[\t ]*(?:FAMILY (?:MEDICAL )?HISTORY)|(?:HISTORY (?:OF )?FAMILY MEMBER DISEASES?)|(?:FAM HX)|FH|FMH|FMHX|FHX[\t ]*:?[\t ]*$
 Medications||^[\t ]*(?:CURRENT )?MEDICATIONS?[\t ]*:?[\t ]*$
@@ -64,7 +64,7 @@ Hospital Course||^[\t ]*(?:BRIEF|HISTORY|HX)? ?HOSPITAL COURSE[\t ]*:?[\t ]*$
 Histology Summary||^[\t ]*HISTO(?:LOGY)? (?:TISSUE )?SUMMARY[\t ]*:?[\t ]*$
 Addendum||^[\t ]*ADDEND(?:A|UM)[\t ]*:?[\t ]*$
 Medications at Transfer||^[\t ]*MEDICATIONS?(?: AT)? TRANSFER[\t ]*:?[\t ]*$
-Findings||^[\t ]*(?:DIAGNOSTIC )?(?:INDICATIONS? ?\/? )?FINDINGS?(?: (?:AT )?SURGERY)?[\t ]*:?[\t ]*$
+Findings||^[\t ]*(?:(?:DIAGNOSTIC )?(?:INDICATIONS? ?\/? )?FINDINGS?(?: (?:AT )?SURGERY)?)|(?:INDICATIONS?:)[\t ]*:?[\t ]*$
 Instructions||^[\t ]*INSTRUCTIONS?[\t ]*:?[\t ]*$
 Current Antibiotics||^[\t ]*CURRENT ANTIBIOTICS?[\t ]*:?[\t ]*$
 Ethanol Use||^[\t ]*(?:HISTORY (?:OF )?)?(?:ALCOHOL|ETHANOL|ETOH)(?: USE)?[\t ]*:?[\t ]*$

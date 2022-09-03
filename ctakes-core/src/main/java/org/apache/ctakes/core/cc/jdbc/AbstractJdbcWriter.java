@@ -66,6 +66,7 @@ abstract public class AbstractJdbcWriter<T> extends JCasAnnotator_ImplBase {
          mandatory = false
    )
    private String _batchSize;
+// TODO Should batchSize be an int ?  Are we getting an exception from ConfigurationParameter?
 
 
    // Maximum row count for prepared statement batches

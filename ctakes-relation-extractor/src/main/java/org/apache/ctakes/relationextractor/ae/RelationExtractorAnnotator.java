@@ -142,23 +142,7 @@ public abstract class RelationExtractorAnnotator extends CleartkAnnotator<String
 	public void process(JCas jCas) throws AnalysisEngineProcessException {
 		// lookup from pair of annotations to binary text relation
 		// note: assumes that there will be at most one relation per pair
-		Map<List<Annotation>, BinaryTextRelation> relationLookup;
-		relationLookup = new HashMap<>();
-		if (this.isTraining()) {
-			relationLookup = new HashMap<>();
-			for (BinaryTextRelation relation : JCasUtil.select(jCas, this.getRelationClass())) {
-				Annotation arg1 = relation.getArg1().getArgument();
-				Annotation arg2 = relation.getArg2().getArgument();
-				// The key is a list of args so we can do bi-directional lookup
-				List<Annotation> key = Arrays.asList(arg1, arg2);
-				if(relationLookup.containsKey(key)){
-					String reln = relationLookup.get(key).getCategory();
-					System.err.println("Error in: "+ ViewUriUtil.getURI(jCas).toString());
-					System.err.println("Error! This attempted relation " + relation.getCategory() + " already has a relation " + reln + " at this span: " + arg1.getCoveredText() + " -- " + arg2.getCoveredText());
-				}
-				relationLookup.put(key, relation);
-			}
-		}
+		Map<List<Annotation>, BinaryTextRelation> relationLookup = this.getRelationLookup(jCas);
 
 		// walk through each sentence in the text
 		for (Annotation coveringAnnotation : JCasUtil.select(jCas, coveringClass)) {
@@ -224,6 +208,33 @@ public abstract class RelationExtractorAnnotator extends CleartkAnnotator<String
 				}
 			} // end pair in pairs
 		} // end for(Sentence)
+	}
+
+	/**
+	 *
+	 * @param jCas - UIMA document wrapper
+	 * @return Mapping from a list of (2) entities to the binary relation that is captured by them. Requires a gold
+	 * standard relations to be in the CAS, and is used during training.
+	 * @throws AnalysisEngineProcessException
+	 */
+	protected Map<List<Annotation>, BinaryTextRelation> getRelationLookup(JCas jCas) throws AnalysisEngineProcessException {
+		Map<List<Annotation>, BinaryTextRelation> relationLookup = new HashMap<>();
+		if (this.isTraining()) {
+			relationLookup = new HashMap<>();
+			for (BinaryTextRelation relation : JCasUtil.select(jCas, this.getRelationClass())) {
+				Annotation arg1 = relation.getArg1().getArgument();
+				Annotation arg2 = relation.getArg2().getArgument();
+				// The key is a list of args so we can do bi-directional lookup
+				List<Annotation> key = Arrays.asList(arg1, arg2);
+				if(relationLookup.containsKey(key)){
+					String reln = relationLookup.get(key).getCategory();
+					System.err.println("Error in: "+ ViewUriUtil.getURI(jCas).toString());
+					System.err.println("Error! This attempted relation " + relation.getCategory() + " already has a relation " + reln + " at this span: " + arg1.getCoveredText() + " -- " + arg2.getCoveredText());
+				}
+				relationLookup.put(key, relation);
+			}
+		}
+		return relationLookup;
 	}
 
 	/**

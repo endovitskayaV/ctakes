@@ -189,7 +189,7 @@ final public class PiperTextFilter extends DocumentFilter {
          _document.setCharacterAttributes( begin, commandEnd, commandStyle, true );
          if ( length > commandEnd ) {
             int styleEnd = commandEnd + 1;
-            if ( command.equals( "reader" ) || command.startsWith( "add" ) ) {
+            if ( command.equals( "reader" ) || command.startsWith( "add" ) || command.equals( "load" ) ) {
                final int bitStart = commandEnd + 1;
                int bitEnd = text.indexOf( ' ', bitStart );
                if ( bitEnd < 0 ) {

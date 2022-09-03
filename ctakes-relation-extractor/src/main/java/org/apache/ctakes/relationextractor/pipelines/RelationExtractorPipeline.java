@@ -19,19 +19,23 @@
 package org.apache.ctakes.relationextractor.pipelines;
 
 import org.apache.ctakes.core.config.ConfigParameterConstants;
+import org.apache.ctakes.core.cr.FileTreeReader;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.apache.uima.cas.SerialFormat;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
-import org.apache.uima.fit.util.CasIOUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.util.CasIOUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -66,19 +70,20 @@ public class RelationExtractorPipeline {
 		CmdLineParser parser = new CmdLineParser(options);
 		parser.parseArgument(args);
 
-		CollectionReaderDescription collectionReader = CollectionReaderFactory.createReaderDescriptionFromPath(
-				"../ctakes-core/desc/collection_reader/FilesInDirectoryCollectionReader.xml",
-            ConfigParameterConstants.PARAM_INPUTDIR,
-            options.inputDirectory );
+		CollectionReaderDescription collectionReader = CollectionReaderFactory.createReaderDescription(
+				FileTreeReader.class,
+				ConfigParameterConstants.PARAM_INPUTDIR,
+				options.inputDirectory);
 
 		// make sure the model parameters match those used for training
 		AnalysisEngineDescription relationExtractor = AnalysisEngineFactory.createEngineDescriptionFromPath(
 				"desc/analysis_engine/RelationExtractorAggregate.xml");
     
-		int fileNum = 0;
 		for(JCas jcas : SimplePipeline.iteratePipeline(collectionReader, relationExtractor)){
-			CasIOUtil.writeXmi(jcas, new File(options.outputDirectory, String.format("%d.txt", fileNum++)));
+			String docId = DocIdUtil.getDocumentID(jcas);
+			try(FileOutputStream fos = new FileOutputStream(new File(options.outputDirectory, String.format("%s.xmi", docId)))) {
+				CasIOUtils.save(jcas.getCas(), fos, SerialFormat.XMI);
+			}
 		}
-    
 	}
 }

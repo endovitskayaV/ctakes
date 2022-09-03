@@ -18,16 +18,19 @@
  */
 package org.apache.ctakes.core.util;
 
+import org.apache.ctakes.typesystem.type.refsem.Date;
+import org.apache.uima.jcas.JCas;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import org.apache.uima.jcas.JCas;
-
-import org.apache.ctakes.typesystem.type.refsem.Date;
-
+/**
+ * @deprecated use core.util CalendarUtil
+ */
+@Deprecated
 public class DateParser {
 
 	private static DateFormat df = DateFormat.getDateInstance();
@@ -74,6 +77,7 @@ public class DateParser {
 	/**
 	 * First try parsing full date (month, day and year) using java.util.Date
 	 * If that fails, try extracting at least part of the date
+    * @deprecated use core.util CalendarUtil
 	 */
 	public static Date parse(JCas jcas, String dateString) {
 		Date date = new Date(jcas);
@@ -130,6 +134,7 @@ public class DateParser {
 	/**
 	 * 
 	 * @return if entire string is letters, returns length of s
+    * @deprecated use core.util CalendarUtil
 	 */
 	public static int getIndexFirstNonLetter(String s) {
 		for (int i=0; i<s.length(); i++) {
@@ -143,6 +148,7 @@ public class DateParser {
 	/**
 	 * 
 	 * @return if entire string is letters, returns 0
+    * @deprecated use core.util CalendarUtil
 	 */
 	public static int getIndexAfterLastNonDigit(String s) {
 		for (int i=s.length(); i>0 ;) {

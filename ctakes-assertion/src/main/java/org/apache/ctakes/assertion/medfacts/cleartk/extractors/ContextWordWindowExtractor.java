@@ -20,13 +20,11 @@ package org.apache.ctakes.assertion.medfacts.cleartk.extractors;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.ctakes.typesystem.type.textspan.Sentence;
@@ -41,6 +39,9 @@ public class ContextWordWindowExtractor implements FeatureExtractor1<IdentifiedA
 	private HashMap<String,Double> termVals = null;
 	private static final Pattern linePatt = Pattern.compile("^([^ ]+) : (.+)$");
 	private static double[] weights = new double[50];
+	private Map<IdentifiedAnnotation, Collection<Sentence>> cachedIndex = new HashMap<>();
+	private String cachedDocId = "__NONE__";
+
 	static{
 		weights[0] = 1.0;
 		for(int i = 1; i < weights.length; i++){
@@ -84,8 +85,13 @@ public class ContextWordWindowExtractor implements FeatureExtractor1<IdentifiedA
 	@Override
 	public List<Feature> extract(JCas view, IdentifiedAnnotation mention)
 			throws CleartkExtractorException {
+		if(!DocIdUtil.getDocumentID(view).equals(cachedDocId)){
+			cachedIndex = JCasUtil.indexCovering(view, IdentifiedAnnotation.class, Sentence.class );
+			cachedDocId = DocIdUtil.getDocumentID(view);
+		}
 		ArrayList<Feature> feats = new ArrayList<Feature>();
-		List<Sentence> sents = JCasUtil.selectCovering(view, Sentence.class, mention.getBegin(), mention.getEnd());
+		List<Sentence> sents = new ArrayList<>(cachedIndex.get(mention));
+
 		if(sents.size() == 0) return feats;
 		Sentence sent = sents.get(0);
 		List<BaseToken> tokens = JCasUtil.selectCovered(BaseToken.class, sent);

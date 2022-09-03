@@ -60,8 +60,9 @@
       <import location="../../../ctakes-dependency-parser/desc/analysis_engine/ClearNLPDependencyParserAE.xml"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="DictionaryLookupAnnotatorDB">
-      <import location="../../../ctakes-dictionary-lookup/desc/analysis_engine/DictionaryLookupAnnotatorUMLS.xml"/>
+      <!--<import location="../../../ctakes-dictionary-lookup/desc/analysis_engine/DictionaryLookupAnnotatorUMLS.xml"/>-->
        <!--<import location="../../../ctakes-dictionary-lookup-fast/desc/analysis_engine/UmlsLookupAnnotator.xml"/>-->
+      <import location="../../../ctakes-dictionary-lookup-fast/desc/analysis_engine/UmlsLookupAnnotator.xml"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="LookupWindowAnnotator">
       <import location="../../../ctakes-clinical-pipeline/desc/analysis_engine/LookupWindowAnnotator.xml"/>

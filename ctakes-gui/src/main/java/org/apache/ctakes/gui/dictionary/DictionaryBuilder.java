@@ -1,9 +1,14 @@
 package org.apache.ctakes.gui.dictionary;
 
 
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.core.util.collection.CollectionMap;
 import org.apache.ctakes.core.util.collection.HashSetMap;
-import org.apache.ctakes.gui.dictionary.umls.*;
+import org.apache.ctakes.gui.dictionary.umls.Concept;
+import org.apache.ctakes.gui.dictionary.umls.ConceptMapFactory;
+import org.apache.ctakes.gui.dictionary.umls.MrconsoParser;
+import org.apache.ctakes.gui.dictionary.umls.UmlsTermUtil;
 import org.apache.ctakes.gui.dictionary.util.HsqlUtil;
 import org.apache.ctakes.gui.dictionary.util.JdbcUtil;
 import org.apache.ctakes.gui.dictionary.util.RareWordDbWriter;
@@ -45,7 +50,7 @@ final class DictionaryBuilder {
                                    final Collection<String> wantedLanguages,
                                    final Collection<String> wantedSources,
                                    final Collection<String> wantedTargets,
-                                   final Collection<Tui> wantedTuis ) {
+                                   final Collection<SemanticTui> wantedTuis ) {
       // Set up the term utility
       final UmlsTermUtil umlsTermUtil = new UmlsTermUtil( DEFAULT_DATA_DIR );
       final Map<Long, Concept> conceptMap
@@ -59,7 +64,7 @@ final class DictionaryBuilder {
                                                final Collection<String> wantedLanguages,
                                                final Collection<String> wantedSources,
                                                final Collection<String> wantedTargets,
-                                               final Collection<Tui> wantedTuis ) {
+                                               final Collection<SemanticTui> wantedTuis ) {
       LOGGER.info( "Parsing Concepts" );
       // Create a map of Cuis to empty Concepts for all wanted Tuis and source vocabularies
       final Map<Long, Concept> conceptMap
@@ -75,11 +80,14 @@ final class DictionaryBuilder {
       return conceptMap;
    }
 
-   static private void removeWsdRarities( final Map<Long, Concept> conceptMap, final Collection<Tui> wantedTuis,
+   static private void removeWsdRarities( final Map<Long, Concept> conceptMap, final Collection<SemanticTui> wantedTuis,
                                           final int wsdDivisor, final int anatMultiplier ) {
       LOGGER.info( "Performing Poor man's WSD ..." );
-      final Collection<Tui> wantedAnatTuis = new ArrayList<>( wantedTuis );
-      wantedAnatTuis.retainAll( Arrays.asList( TuiTableModel.CTAKES_ANAT ) );
+      final EnumSet<SemanticTui> wantedAnatTuis = EnumSet.noneOf( SemanticTui.class );
+      Arrays.stream( SemanticTui.values() )
+            .filter( t -> t.getGroup() == SemanticGroup.ANATOMY )
+            .filter( wantedTuis::contains )
+            .forEach( wantedAnatTuis::add );
       final CollectionMap<String, Concept, Set<Concept>> synonymCodeMap = new HashSetMap<>( 500000 );
       for ( Concept concept : conceptMap.values() ) {
          concept.cullExtensions();
@@ -129,17 +137,23 @@ final class DictionaryBuilder {
    }
 
    static private void removeAnatTexts( final Map<Long, Concept> conceptMap,
-                                        final Collection<Tui> wantedTuis ) {
+                                        final Collection<SemanticTui> wantedTuis ) {
       LOGGER.info( "Removing Non-Anatomy synonyms that are also Anatomy synonyms ..." );
-      final Collection<Tui> wantedAnatTuis = new ArrayList<>( wantedTuis );
-      wantedAnatTuis.retainAll( Arrays.asList( TuiTableModel.CTAKES_ANAT ) );
+      final EnumSet<SemanticTui> wantedAnatTuis = EnumSet.noneOf( SemanticTui.class );
+      Arrays.stream( SemanticTui.values() )
+            .filter( t -> t.getGroup() == SemanticGroup.ANATOMY )
+            .filter( wantedTuis::contains )
+            .forEach( wantedAnatTuis::add );
       final Collection<String> anatTexts = conceptMap.values().stream()
-            .filter( c -> wantedAnatTuis.containsAll( c.getTuis() ) )
-            .map( Concept::getTexts )
-            .flatMap( Collection::stream )
-            .collect( Collectors.toSet() );
-      final Collection<Tui> nonAnatTuis = new ArrayList<>( wantedTuis );
-      nonAnatTuis.removeAll( Arrays.asList( TuiTableModel.CTAKES_ANAT ) );
+                                                     .filter( c -> wantedAnatTuis.containsAll( c.getTuis() ) )
+                                                     .map( Concept::getTexts )
+                                                     .flatMap( Collection::stream )
+                                                     .collect( Collectors.toSet() );
+      final EnumSet<SemanticTui> nonAnatTuis = EnumSet.noneOf( SemanticTui.class );
+      Arrays.stream( SemanticTui.values() )
+            .filter( t -> t.getGroup() != SemanticGroup.ANATOMY )
+            .filter( wantedTuis::contains )
+            .forEach( nonAnatTuis::add );
       final Collection<Long> empties = new ArrayList<>();
       int textCount = 0;
       for ( Map.Entry<Long, Concept> entry : conceptMap.entrySet() ) {
@@ -159,14 +173,21 @@ final class DictionaryBuilder {
 
 
    // TODO too much tui confusion in non-rxnorm drugs
-   static private void removeUnwantedDrugs( final Map<Long, Concept> conceptMap, Collection<Tui> wantedTuis ) {
+   static private void removeUnwantedDrugs( final Map<Long, Concept> conceptMap,
+                                            final Collection<SemanticTui> wantedTuis ) {
       LOGGER.info( "Removing Drug Concepts not in rxnorm ..." );
       // remove concepts that have only drug tuis but are not in rxnorm
-      final Collection<Tui> drugTuis = new ArrayList<>( wantedTuis );
-      drugTuis.retainAll( Arrays.asList( TuiTableModel.CTAKES_DRUG ) );
+      final EnumSet<SemanticTui> drugTuis = EnumSet.noneOf( SemanticTui.class );
+      Arrays.stream( SemanticTui.values() )
+            .filter( t -> t.getGroup() == SemanticGroup.DRUG )
+            .filter( wantedTuis::contains )
+            .forEach( drugTuis::add );
       // remove concepts that are in rxnorm but have non-drug tuis
-      final Collection<Tui> nonDrugTuis = new ArrayList<>( wantedTuis );
-      nonDrugTuis.removeAll( Arrays.asList( TuiTableModel.CTAKES_DRUG ) );
+      final EnumSet<SemanticTui> nonDrugTuis = EnumSet.noneOf( SemanticTui.class );
+      Arrays.stream( SemanticTui.values() )
+            .filter( t -> t.getGroup() != SemanticGroup.DRUG )
+            .filter( wantedTuis::contains )
+            .forEach( nonDrugTuis::add );
       // if concept has drug tuis but is not in rxnorm || concept is in rxnorm but does not have drug tuis
       final Collection<Long> empties = new ArrayList<>();
       int textCount = 0;

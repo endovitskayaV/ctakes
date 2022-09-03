@@ -19,7 +19,7 @@
 package org.apache.ctakes.core.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -61,7 +61,7 @@ public class SimpleSegmentAnnotator extends JCasAnnotator_ImplBase {
 		segment.setBegin(0);
 		String text = jCas.getDocumentText();
 		if (text == null) {
-			String docId = DocumentIDAnnotationUtil.getDocumentID(jCas);
+         String docId = DocIdUtil.getDocumentID( jCas );
 			throw new AnalysisEngineProcessException("text is null for docId="
 					+ docId, null);
 		}

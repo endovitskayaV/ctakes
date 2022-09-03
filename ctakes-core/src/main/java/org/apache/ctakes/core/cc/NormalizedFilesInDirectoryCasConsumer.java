@@ -19,8 +19,8 @@
 package org.apache.ctakes.core.cc;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.WordTokenUtil;
+import org.apache.ctakes.core.util.annotation.WordTokenUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.syntax.WordToken;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
@@ -83,7 +83,7 @@ public class NormalizedFilesInDirectoryCasConsumer extends CasConsumer_ImplBase 
                normalizedText.append( " " );
             }
          }
-         final String documentID = DocumentIDAnnotationUtil.getDocumentID( jcas );
+         final String documentID = DocIdUtil.getDocumentID( jcas );
          writeToFile( documentID, normalizedText.toString() );
       } catch ( CASException | IOException multE ) {
          throw new ResourceProcessException( multE );

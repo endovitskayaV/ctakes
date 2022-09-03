@@ -1,7 +1,7 @@
 package org.apache.ctakes.core.cc;
 
 import org.apache.ctakes.core.resource.JdbcConnectionResource;
-import org.apache.ctakes.core.util.SourceMetadataUtil;
+import org.apache.ctakes.core.util.doc.SourceMetadataUtil;
 import org.apache.ctakes.typesystem.type.structured.SourceData;
 import org.apache.log4j.Logger;
 import org.apache.uima.cas.CAS;

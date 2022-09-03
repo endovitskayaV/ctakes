@@ -6,6 +6,7 @@ import org.apache.ctakes.core.cc.pretty.html.HtmlTextWriter;
 import org.apache.ctakes.core.config.ConfigParameterConstants;
 import org.apache.ctakes.core.cr.FileTreeReader;
 import org.apache.ctakes.core.util.PropertyAeFactory;
+import org.apache.ctakes.core.util.external.SystemUtil;
 import org.apache.log4j.Logger;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_component.AnalysisComponent;
@@ -95,11 +96,17 @@ final public class PipelineBuilder {
     * @return this PipelineBuilder
     */
    public PipelineBuilder setIfEmpty( final Object... parameters ) {
-      PropertyAeFactory.getInstance().addIfEmptyParameters( parameters );
+      PropertyAeFactory.getInstance()
+                       .addIfEmptyParameters( parameters );
       _pipelineChanged = true;
       return this;
    }
 
+   public PipelineBuilder env( final Object... parameters ) {
+      SystemUtil.addEnvironmentVariables( parameters );
+      // Pipeline was not changed
+      return this;
+   }
 
    /**
     * Use of this method is not order-specific
@@ -356,6 +363,10 @@ final public class PipelineBuilder {
       return this;
    }
 
+   public int getThreadCount() {
+      return _threadCount;
+   }
+
    /**
     * Initialize a pipeline that can be used repeatedly using {@link #run} and {@link #run(String)}.
     * A pipeline can be extended between builds, but the full pipeline will be rebuilt on each call.
@@ -429,8 +440,26 @@ final public class PipelineBuilder {
       }
       final JCas jcas = JCasFactory.createJCas();
       jcas.setDocumentText( text );
+      return run( jcas );
+   }
+
+   /**
+    * Run the pipeline on the given jcas.
+    * Use of this method is order-specific.
+    * This method will call {@link #build()} if the pipeline has not already been initialized.
+    *
+    * @param jCas ye olde ...
+    * @return this PipelineBuilder
+    * @throws IOException   if the pipeline could not be run
+    * @throws UIMAException if the pipeline could not be run
+    */
+   public PipelineBuilder run( final JCas jCas ) throws IOException, UIMAException {
+      if ( _readerDesc != null ) {
+         LOGGER.error( "Collection Reader specified, ignoring." );
+         return this;
+      }
       build();
-      SimplePipeline.runPipeline( jcas, _analysisEngineDesc );
+      SimplePipeline.runPipeline( jCas, _analysisEngineDesc );
       return this;
    }
 

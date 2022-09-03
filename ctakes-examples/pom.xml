@@ -59,6 +59,12 @@
      	<groupId>org.apache.uima</groupId>
      	<artifactId>uimafit-cpe</artifactId>
      </dependency>
+     <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>RELEASE</version>
+        <scope>compile</scope>
+     </dependency>
   </dependencies>
     <profiles>
         <profile>
@@ -96,5 +102,40 @@
                 </plugins>
             </build>
         </profile>
+       <profile>
+          <id>runDictionaryGui</id>
+          <activation>
+             <property>
+                <name>runDictionaryGui</name>
+             </property>
+          </activation>
+          <build>
+             <plugins>
+                <plugin>
+                   <groupId>org.codehaus.mojo</groupId>
+                   <artifactId>exec-maven-plugin</artifactId>
+                   <executions>
+                      <execution>
+                         <goals>
+                            <goal>exec</goal>
+                         </goals>
+                      </execution>
+                   </executions>
+                   <configuration>
+                      <executable>java</executable>
+                      <includeProjectDependencies>true</includeProjectDependencies>
+                      <includePluginDependencies>true</includePluginDependencies>
+                      <workingDirectory>${project.parent.basedir}</workingDirectory>
+                      <arguments>
+                         <argument>-classpath</argument>
+                         <classpath/>
+                         <argument>-Xmx3G</argument>
+                         <argument>org.apache.ctakes.gui.dictionary.DictionaryCreator</argument>
+                      </arguments>
+                   </configuration>
+                </plugin>
+             </plugins>
+          </build>
+       </profile>
     </profiles>
 </project>

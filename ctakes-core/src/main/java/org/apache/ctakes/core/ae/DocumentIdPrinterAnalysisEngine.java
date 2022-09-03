@@ -20,7 +20,7 @@ package org.apache.ctakes.core.ae;
 
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.log4j.Logger;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -39,7 +39,7 @@ public class DocumentIdPrinterAnalysisEngine extends JCasAnnotator_ImplBase
   @Override
   public void process(JCas jcas) throws AnalysisEngineProcessException
   {
-    String documentId = DocumentIDAnnotationUtil.getDocumentID(jcas);
+     String documentId = DocIdUtil.getDocumentID( jcas );
     String logMessage = String.format("##### current file document id: \"%s\"", documentId);
     logger.info(logMessage);
     System.out.println(logMessage);

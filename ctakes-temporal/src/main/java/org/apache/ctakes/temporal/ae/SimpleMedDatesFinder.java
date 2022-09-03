@@ -2,8 +2,8 @@ package org.apache.ctakes.temporal.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
 import org.apache.ctakes.core.util.Pair;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
 import org.apache.ctakes.temporal.utils.CalendarUtil;
 import org.apache.ctakes.typesystem.type.refsem.Date;
 import org.apache.ctakes.typesystem.type.syntax.Chunk;

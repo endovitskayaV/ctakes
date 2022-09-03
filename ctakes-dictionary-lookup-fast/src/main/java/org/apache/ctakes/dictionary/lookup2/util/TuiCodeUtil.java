@@ -1,7 +1,7 @@
 package org.apache.ctakes.dictionary.lookup2.util;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.stream.Collectors;
 
 /**
  * Author: SPF
@@ -38,24 +38,16 @@ final public class TuiCodeUtil {
 
 
    static public Collection<String> getIntAsTuis( final Collection<Integer> tuiCodes ) {
-      final Collection<String> tuis = new HashSet<>( tuiCodes.size() );
-      for ( Integer tuiCode : tuiCodes ) {
-         tuis.add( getAsTui( tuiCode ) );
-      }
-      return tuis;
+      return tuiCodes.stream().map( TuiCodeUtil::getAsTui ).collect( Collectors.toSet() );
    }
 
    static public Collection<String> getStringAsTuis( final Collection<String> tuiNums ) {
-      final Collection<String> tuis = new HashSet<>( tuiNums.size() );
-      for ( String tuiNum : tuiNums ) {
-         tuis.add( getAsTui( tuiNum ) );
-      }
-      return tuis;
+      return tuiNums.stream().map( TuiCodeUtil::getAsTui ).collect( Collectors.toSet() );
    }
 
    static public Integer getTuiCode( final String tui ) {
       final String tuiText = getAsTui( tui );
-      final String tuiNum = tuiText.substring( 1, tuiText.length() );
+      final String tuiNum = tuiText.substring( 1 );
       try {
          return Integer.parseInt( tuiNum );
       } catch ( NumberFormatException nfE ) {

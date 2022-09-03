@@ -2,9 +2,9 @@ package org.apache.ctakes.core.cc;
 
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.semantic.SemanticTui;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
 import org.apache.ctakes.core.util.RelationArgumentUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.typesystem.type.constants.CONST;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
 import org.apache.ctakes.typesystem.type.relation.LocationOfTextRelation;
@@ -43,7 +43,7 @@ public class CuiListFileWriter extends AbstractJCasFileWriter {
                           final String outputDir,
                           final String documentId,
                           final String fileName ) throws IOException {
-      final File file = new File( outputDir, fileName + "_cuis.txt" );
+      final File file = new File( outputDir, documentId + "_cuis.txt" );
       final Collection<IdentifiedAnnotation> annotations = JCasUtil.select( jCas, IdentifiedAnnotation.class );
       LOGGER.info( "Writing CUI list to " + file.getPath() + " ..." );
       final StringBuilder sb = new StringBuilder();
@@ -69,7 +69,7 @@ public class CuiListFileWriter extends AbstractJCasFileWriter {
                           final String outputDir,
                           final String documentId,
                           final String fileName ) throws IOException {
-      final File file = new File( outputDir, fileName + "_annotationInfo.bsv" );
+      final File file = new File( outputDir, documentId + "_annotationInfo.bsv" );
       LOGGER.info( "Writing Annotation Information to " + file.getPath() + " ..." );
       final Collection<IdentifiedAnnotation> annotations = JCasUtil.select( jCas, IdentifiedAnnotation.class );
       final Collection<LocationOfTextRelation> locations = JCasUtil.select( jCas, LocationOfTextRelation.class );

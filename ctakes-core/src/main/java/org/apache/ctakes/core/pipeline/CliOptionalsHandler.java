@@ -31,14 +31,18 @@ final public class CliOptionalsHandler {
             return optionals.getSubDirectory();
          case "l":
             return optionals.getLookupXml();
-         case "user":
+         case StandardCliOptions.UMLS_USER:
             return optionals.getUmlsUserName();
-         case "pass":
+         case StandardCliOptions.UMLS_PASS:
             return optionals.getUmlsPassword();
-         case "xmiOut":
+         case StandardCliOptions.UMLS_KEY:
+            return optionals.getUmlsApiKey();
+         case StandardCliOptions.XMI_OUT_DIR:
             return optionals.getXmiOutDirectory();
-         case "htmlOut":
+         case StandardCliOptions.HTML_OUT_DIR:
             return optionals.getHtmlOutDirectory();
+         case StandardCliOptions.SUB_DIR:
+            return optionals.getSubDirectory();
          case "a":
             return optionals.getOption_a();
          case "b":

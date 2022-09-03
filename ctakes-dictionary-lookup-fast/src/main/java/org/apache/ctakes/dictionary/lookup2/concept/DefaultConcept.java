@@ -1,15 +1,15 @@
 package org.apache.ctakes.dictionary.lookup2.concept;
 
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.core.util.collection.CollectionMap;
 import org.apache.ctakes.core.util.collection.HashSetMap;
 import org.apache.ctakes.core.util.collection.ImmutableCollectionMap;
-import org.apache.ctakes.dictionary.lookup2.util.SemanticUtil;
-import org.apache.ctakes.typesystem.type.constants.CONST;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.stream.Collectors;
 
 /**
  * Author: SPF
@@ -52,13 +52,13 @@ final public class DefaultConcept implements Concept {
       _preferredText = preferredText;
       _codes = new ImmutableCollectionMap<>( codes );
       // Attempt to obtain one or more valid type ids from the tuis of the term
-      final Collection<Integer> ctakesSemantics = new HashSet<>();
-      getCodes( TUI ).forEach( t -> ctakesSemantics.add( SemanticUtil.getTuiSemanticGroupId( t ) ) );
-//      final Collection<Integer> ctakesSemantics = getCodes( TUI ).stream()
-//            .map( SemanticUtil::getTuiSemanticGroupId )
-//            .collect( Collectors.toSet() );
+      Collection<Integer> ctakesSemantics
+            = getCodes( TUI ).stream()
+                             .map( SemanticTui::getTuiFromCode )
+                             .map( SemanticTui::getGroupCode )
+                             .collect( Collectors.toSet() );
       if ( ctakesSemantics.isEmpty() ) {
-         ctakesSemantics.add( CONST.NE_TYPE_ID_UNKNOWN );
+         ctakesSemantics = Collections.singletonList( SemanticGroup.UNKNOWN.getCode() );
       }
       _ctakesSemantics = Collections.unmodifiableCollection( ctakesSemantics );
       _hashcode = cui.hashCode();

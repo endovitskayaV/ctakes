@@ -21,7 +21,7 @@ package org.apache.ctakes.core.ae;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.resource.FileLocator;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
@@ -137,7 +137,7 @@ public class CDASegmentAnnotator extends JCasAnnotator_ImplBase {
   public void process(JCas jCas) throws AnalysisEngineProcessException {
 		String text = jCas.getDocumentText();
 		if (text == null) {
-			String docId = DocumentIDAnnotationUtil.getDocumentID(jCas);
+         String docId = DocIdUtil.getDocumentID( jCas );
 			logger.info("text is null for docId=" + docId);
 		} else {
 			ArrayList<Segment> sorted_segments = new ArrayList<>();

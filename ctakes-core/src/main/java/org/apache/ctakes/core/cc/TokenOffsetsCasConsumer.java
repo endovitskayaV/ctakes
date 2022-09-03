@@ -19,7 +19,7 @@
 package org.apache.ctakes.core.cc;
 
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CasConsumer_ImplBase;
@@ -87,9 +87,9 @@ public class TokenOffsetsCasConsumer extends CasConsumer_ImplBase {
 	        	BaseToken token = (BaseToken) tokenItr.next();
 	        	String offset = ""+token.getBegin()+"|"+token.getEnd();
 	        	offsets.add(offset);
-	        }	        	
+           }
 
-	        String documentID = DocumentIDAnnotationUtil.getDocumentID(jcas);
+         String documentID = DocIdUtil.getDocumentID( jcas );
 			writeToFile(documentID, offsets);
 			
 		}

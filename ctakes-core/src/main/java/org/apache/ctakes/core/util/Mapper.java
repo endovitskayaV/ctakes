@@ -26,14 +26,17 @@ import org.apache.ctakes.typesystem.type.constants.CONST;
  * automatically is passed, "unknown relation" id is returned.
  *  
  * @author dmitriy dligach
- *
+ * @deprecated use org.apache.ctakes.core.util.annotation.SemanticGroup.  e.g. SemanticGroup.getBestGroup( annotation ).getCode();
  */
+@Deprecated
 public class Mapper {
 
 	/**
 	 * Map entity type to its integer id.
+    * @deprecated use org.apache.ctakes.core.util.annotation.SemanticGroup.  SemanticGroup.getGroup( name ).getCode();
 	 */
-	public static int getEntityTypeId(String entityType) {
+   @Deprecated
+   public static int getEntityTypeId( String entityType ) {
 
 		if(entityType.equals("Disease_Disorder")) return CONST.NE_TYPE_ID_DISORDER;
 	  else if(entityType.equals("Procedure")) return CONST.NE_TYPE_ID_PROCEDURE;
@@ -45,8 +48,10 @@ public class Mapper {
 	
 	/**
 	 * Map modifier type to its integer id.
+    * @deprecated use org.apache.ctakes.core.util.annotation.SemanticGroup.  SemanticGroup.getGroup( name ).getCode();
 	 */
-	public static int getModifierTypeId(String modifierType) {
+   @Deprecated
+   public static int getModifierTypeId( String modifierType ) {
 		
 		if(modifierType.equals("course_class")) return CONST.MODIFIER_TYPE_ID_COURSE_CLASS;
 		else if(modifierType.equals("severity_class")) return CONST.MODIFIER_TYPE_ID_SEVERITY_CLASS;

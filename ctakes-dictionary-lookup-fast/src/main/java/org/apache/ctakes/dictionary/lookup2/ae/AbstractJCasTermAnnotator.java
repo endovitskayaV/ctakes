@@ -19,7 +19,6 @@
 package org.apache.ctakes.dictionary.lookup2.ae;
 
 import org.apache.ctakes.core.config.ConfigParameterConstants;
-import org.apache.ctakes.core.fsm.token.NumberToken;
 import org.apache.ctakes.core.resource.FileLocator;
 import org.apache.ctakes.core.util.collection.CollectionMap;
 import org.apache.ctakes.core.util.collection.HashSetMap;
@@ -319,9 +318,9 @@ abstract public class AbstractJCasTermAnnotator extends JCasAnnotator_ImplBase
             continue;
          }
          final boolean isNonLookup = baseToken instanceof PunctuationToken
-               || baseToken instanceof NumberToken
-               || baseToken instanceof ContractionToken
-               || baseToken instanceof SymbolToken;
+                                     || baseToken instanceof NumToken
+                                     || baseToken instanceof ContractionToken
+                                     || baseToken instanceof SymbolToken;
          // We are only interested in tokens that are -words-
          if ( !isNonLookup ) {
             // POS exclusion logic for first word lookup

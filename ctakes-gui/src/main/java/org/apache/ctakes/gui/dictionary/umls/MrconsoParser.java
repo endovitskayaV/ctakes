@@ -152,7 +152,7 @@ final public class MrconsoParser {
                concept.setPreferredText( text );
             }
             // Get tokenized text
-            final String tokenizedText = TextTokenizer.getTokenizedText( text );
+            final String tokenizedText = TextTokenizer.getTokenizedText( text.toLowerCase() );
             if ( tokenizedText == null || tokenizedText.isEmpty()
                  || !umlsTermUtil.isTextValid( tokenizedText )
                  || DoseUtil.hasUnit( tokenizedText ) ) {

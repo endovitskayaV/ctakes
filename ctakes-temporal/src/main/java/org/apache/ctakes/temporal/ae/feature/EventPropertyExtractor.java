@@ -18,28 +18,22 @@
  */
 package org.apache.ctakes.temporal.ae.feature;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-//import java.util.logging.Logger;
-import java.util.Set;
-
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.typesystem.type.syntax.BaseToken;
 import org.apache.ctakes.typesystem.type.syntax.NewlineToken;
-import org.apache.ctakes.typesystem.type.syntax.PunctuationToken;
 import org.apache.ctakes.typesystem.type.syntax.WordToken;
 import org.apache.ctakes.typesystem.type.textsem.EventMention;
 import org.apache.ctakes.typesystem.type.textspan.Sentence;
-import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.cleartk.ml.Feature;
 import org.cleartk.ml.feature.extractor.CleartkExtractorException;
 import org.cleartk.ml.feature.extractor.FeatureExtractor1;
-import org.cleartk.util.ViewUriUtil;
+
+import java.util.*;
+
+//import java.util.logging.Logger;
 
 public class EventPropertyExtractor implements FeatureExtractor1<Annotation> {
 
@@ -87,7 +81,7 @@ public class EventPropertyExtractor implements FeatureExtractor1<Annotation> {
 		//get Document ID:
 		String fname;
 		try {
-			String docID = DocumentIDAnnotationUtil.getDocumentID(view);//ViewUriUtil.getURI(view).toString();
+         String docID = DocIdUtil.getDocumentID( view );//ViewUriUtil.getURI(view).toString();
 			
 			int begin = docID.lastIndexOf("_");
 			fname = docID.substring(begin+1);

@@ -3,10 +3,10 @@ package org.apache.ctakes.core.cc.html;
 
 import org.apache.ctakes.core.cc.AbstractJCasFileWriter;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
-import org.apache.ctakes.core.semantic.SemanticGroup;
-import org.apache.ctakes.core.semantic.SemanticTui;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.Pair;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.SemanticGroup;
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.core.util.textspan.DefaultTextSpan;
 import org.apache.ctakes.core.util.textspan.TextSpan;
 import org.apache.ctakes.typesystem.type.refsem.Event;
@@ -102,15 +102,14 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
             JsWriter.writeJsFile( jsPath );
          }
       }
-      final File htmlFile = new File( outputDir, fileName + FILE_EXTENSION );
+      final File htmlFile = new File( outputDir, documentId + FILE_EXTENSION );
       LOGGER.info( "Writing HTML to " + htmlFile.getPath() + " ..." );
       try ( final BufferedWriter writer = new BufferedWriter( new FileWriter( htmlFile ) ) ) {
-         final String title = DocumentIDAnnotationUtil.getDocumentID( jCas );
          writer.write( startBody() );
          writer.write( getCssLink( CSS_FILENAME ) );
          writer.write( getJsLink( JS_FILENAME ) );
          writer.write( startContainer() );
-         writer.write( getHeader( title ) );
+         writer.write( getHeader( documentId ) );
          writer.write( getNav() );
          writer.write( startArticle() );
 
@@ -123,6 +122,12 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
                = JCasUtil.indexCovered( jCas, Segment.class, Sentence.class );
          final Map<Sentence, Collection<IdentifiedAnnotation>> sentenceAnnotations
                = JCasUtil.indexCovered( jCas, Sentence.class, IdentifiedAnnotation.class );
+//         Collection<IdentifiedAnnotation> removeEvents
+//               = sentenceAnnotations.values().stream()
+//                                    .flatMap( Collection::stream )
+//                                    .filter( a -> a.getClass().equals( EventMention.class ) )
+//                                    .collect( Collectors.toSet() );
+//         sentenceAnnotations.values().forEach( s -> s.removeAll( removeEvents ) );
          final Map<Sentence, Collection<BaseToken>> sentenceTokens
                = JCasUtil.indexCovered( jCas, Sentence.class, BaseToken.class );
          final Collection<BinaryTextRelation> relations = JCasUtil.select( jCas, BinaryTextRelation.class );
@@ -131,7 +136,7 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
          cullAnnotations( sentenceAnnotations.values() );
 
          final Collection<CollectionTextRelation> corefRelations = JCasUtil.select( jCas,
-               CollectionTextRelation.class );
+                                                                                    CollectionTextRelation.class );
          final Map<Markable, TextSpan> markableSpans = mapMarkableSpans( jCas, corefRelations );
          final Map<TextSpan, Collection<Integer>> corefSpans = createCorefSpans( corefRelations, markableSpans );
 
@@ -159,8 +164,10 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
       final Collection<IdentifiedAnnotation> keepers = new HashSet<>();
       for ( Collection<IdentifiedAnnotation> annotations : sentenceAnnotations ) {
          annotations.stream()
-               .filter( keep )
-               .forEach( keepers::add );
+                    .filter( keep )
+                    .filter( a -> !a.getClass()
+                                    .equals( EventMention.class ) )
+                    .forEach( keepers::add );
          annotations.retainAll( keepers );
          keepers.clear();
       }
@@ -733,14 +740,13 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
                .append( sectionTag.trim() )
                .append( "')\"" );
       }
-      sb.append( ">" )
-            .append( getSafeText( sectionId ) );
+      sb.append( ">" );
       final String sectionName = section.getPreferredText();
       if ( sectionName != null && !sectionName.trim()
-            .isEmpty() && !sectionName.trim()
-            .equals( sectionId ) ) {
-         sb.append( " : " )
-               .append( getSafeText( sectionName ) );
+                                              .isEmpty() ) {
+         sb.append( getSafeText( sectionName ) );
+      } else {
+         sb.append( getSafeText( sectionId ) );
       }
       sb.append( "</h3>\n" );
       writer.write( sb.toString() );
@@ -773,7 +779,8 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
          return;
       }
       final String lineText = createLineText( sentence, annotations, baseTokenMap, relations, corefSpans );
-      writer.write( lineText + "\n<br>\n" );
+//      writer.write( lineText + "\n<br>\n" );
+      writer.write( lineText + "\n  \n" );
    }
 
    /**
@@ -810,7 +817,7 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
    }
 
    static private String getSafeText( final String text ) {
-      if ( text.isEmpty() ) {
+      if ( text == null || text.isEmpty() ) {
          return "";
       }
       String safeText = text.replaceAll( "'", "&apos;" );
@@ -1089,15 +1096,64 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
       return indexTags;
    }
 
-   static private Collection<IdentifiedAnnotation> getEndAnnotations( final Collection<IdentifiedAnnotation> annotations,
-                                                                      final int adjustedEnd ) {
+   static private Collection<IdentifiedAnnotation> getEndAnnotations(
+         final Collection<IdentifiedAnnotation> annotations,
+         final int adjustedEnd ) {
       if ( annotations == null || annotations.isEmpty() ) {
          return Collections.emptyList();
       }
       return annotations.stream()
-            .filter( a -> a.getEnd() == adjustedEnd )
-            .collect( Collectors.toSet() );
+                        .filter( a -> a.getEnd() == adjustedEnd )
+                        .collect( Collectors.toSet() );
    }
+
+//   /**
+//    * @param annotations -
+//    * @return html with annotation information: polarity, semantic, cui, text, pref text
+//    */
+//   static private String createClickInfo( final Collection<IdentifiedAnnotation> annotations,
+//                                          final Map<IdentifiedAnnotation, IdentifiedAnnotation> annotationEvents,
+//                                          final Collection<BinaryTextRelation> relations ) {
+//      if ( annotations == null || annotations.isEmpty() ) {
+//         return "";
+//      }
+//      final Map<String, Map<String, Collection<String>>> polarInfoMap = new HashMap<>();
+//      for ( IdentifiedAnnotation annotation : annotations ) {
+//         final String polarity = createPolarity( annotation );
+//         polarInfoMap.putIfAbsent( polarity, new HashMap<>() );
+//         final IdentifiedAnnotation event = annotationEvents.get( annotation );
+//         final Map<String, Collection<String>> infoMap = createInfoMap( annotation, event, relations );
+//         for ( Map.Entry<String, Collection<String>> infoEntry : infoMap.entrySet() ) {
+//            polarInfoMap.get( polarity )
+//                  .putIfAbsent( infoEntry.getKey(), new HashSet<>() );
+//            polarInfoMap.get( polarity )
+//                  .get( infoEntry.getKey() )
+//                  .addAll( infoEntry.getValue() );
+//         }
+//      }
+//      final List<String> polarities = new ArrayList<>( polarInfoMap.keySet() );
+//      Collections.sort( polarities );
+//      final StringBuilder sb = new StringBuilder();
+//      for ( String polarity : polarities ) {
+//         sb.append( polarity )
+//               .append( NEWLINE );
+//         final Map<String, Collection<String>> infoMap = polarInfoMap.get( polarity );
+//         final List<String> semantics = new ArrayList<>( infoMap.keySet() );
+//         Collections.sort( semantics );
+//         for ( String semantic : semantics ) {
+//            sb.append( semantic )
+//                  .append( NEWLINE );
+//            final List<String> texts = new ArrayList<>( infoMap.get( semantic ) );
+//            Collections.sort( texts );
+//            for ( String text : texts ) {
+//               sb.append( text )
+//                     .append( NEWLINE );
+//            }
+//         }
+//      }
+//      return sb.toString();
+//   }
+
 
    /**
     * @param annotations -
@@ -1109,87 +1165,223 @@ final public class HtmlTextWriter extends AbstractJCasFileWriter {
       if ( annotations == null || annotations.isEmpty() ) {
          return "";
       }
-      final Map<String, Map<String, Collection<String>>> polarInfoMap = new HashMap<>();
-      for ( IdentifiedAnnotation annotation : annotations ) {
-         final String polarity = createPolarity( annotation );
-         polarInfoMap.putIfAbsent( polarity, new HashMap<>() );
-         final IdentifiedAnnotation event = annotationEvents.get( annotation );
-         final Map<String, Collection<String>> infoMap = createInfoMap( annotation, event, relations );
-         for ( Map.Entry<String, Collection<String>> infoEntry : infoMap.entrySet() ) {
-            polarInfoMap.get( polarity )
-                  .putIfAbsent( infoEntry.getKey(), new HashSet<>() );
-            polarInfoMap.get( polarity )
-                  .get( infoEntry.getKey() )
-                  .addAll( infoEntry.getValue() );
-         }
-      }
-      final List<String> polarities = new ArrayList<>( polarInfoMap.keySet() );
-      Collections.sort( polarities );
       final StringBuilder sb = new StringBuilder();
-      for ( String polarity : polarities ) {
-         sb.append( polarity )
-               .append( NEWLINE );
-         final Map<String, Collection<String>> infoMap = polarInfoMap.get( polarity );
-         final List<String> semantics = new ArrayList<>( infoMap.keySet() );
-         Collections.sort( semantics );
-         for ( String semantic : semantics ) {
-            sb.append( semantic )
-                  .append( NEWLINE );
-            final List<String> texts = new ArrayList<>( infoMap.get( semantic ) );
-            Collections.sort( texts );
-            for ( String text : texts ) {
-               sb.append( text )
-                     .append( NEWLINE );
+
+      final Map<Pair<Integer>, Collection<IdentifiedAnnotation>> coverageMap = new HashMap<>();
+      for ( IdentifiedAnnotation annotation : annotations ) {
+         final Pair<Integer> span = new Pair<>( annotation.getBegin(), annotation.getEnd() );
+         coverageMap.computeIfAbsent( span, s -> new HashSet<>() )
+                    .add( annotation );
+      }
+
+      for ( Collection<IdentifiedAnnotation> spanAnnotations : coverageMap.values() ) {
+         String coveredText = "";
+         final List<SemanticGroup> allGroups = new ArrayList<>();
+         final Map<SemanticTui, String> allInfoMap = new EnumMap<>( SemanticTui.class );
+         final Collection<String> dtrSet = new HashSet<>();
+         StringBuilder relationText = new StringBuilder();
+         for ( IdentifiedAnnotation annotation : spanAnnotations ) {
+            final IdentifiedAnnotation event = annotationEvents.get( annotation );
+            coveredText = getCoveredText( annotation );
+
+            final Map<SemanticTui, String> infoMap = createInfoMap( annotation );
+            for ( Map.Entry<SemanticTui, String> info : infoMap.entrySet() ) {
+               final String infoSoFar = allInfoMap.getOrDefault( info.getKey(), "" );
+               allInfoMap.put( info.getKey(), infoSoFar + info.getValue() );
+            }
+            final Collection<SemanticGroup> groups = SemanticGroup.getGroups( annotation );
+            groups.stream()
+                  .filter( g -> !allGroups.contains( g ) )
+                  .forEach( allGroups::add );
+            if ( annotation instanceof EventMention ) {
+               dtrSet.add( getDocTimeRel( (EventMention) annotation ) );
+            }
+            relationText.append( getRelationText( annotation, relations ) );
+            if ( event != null ) {
+               if ( annotation instanceof EventMention ) {
+                  dtrSet.add( getDocTimeRel( (EventMention) event ) );
+               }
+               relationText.append( getRelationText( event, relations ) );
             }
          }
+
+         final String safeText = getSafeText( coveredText );
+         sb.append( safeText )
+           .append( NEWLINE );
+         allGroups.sort( Comparator.comparing( SemanticGroup::getName ) );
+         final List<SemanticTui> allTuis = new ArrayList<>( allInfoMap.keySet() );
+         allTuis.sort( Comparator.comparing( SemanticTui::getSemanticType ) );
+         for ( SemanticGroup group : allGroups ) {
+            sb.append( SemanticMarkup.getMarkup( group )
+                                     .getEncoding() )
+              .append( NEWLINE );
+            for ( SemanticTui tui : allTuis ) {
+               if ( tui.getGroup() != group ) {
+                  continue;
+               }
+               sb.append( SPACER )
+                 .append( tui.getSemanticType() )
+                 .append( NEWLINE );
+               sb.append( SPACER )
+                 .append( tui.name() )
+                 .append( NEWLINE );
+               sb.append( allInfoMap.get( tui ) );
+            }
+         }
+         final String dtr = dtrSet.stream()
+                                  .map( d -> SPACER + d + NEWLINE )
+                                  .collect( Collectors.joining() );
+         sb.append( dtr );
+         sb.append( SPACER )
+           .append( relationText.toString() )
+           .append( NEWLINE );
+         sb.append( NEWLINE );
       }
       return sb.toString();
    }
+
+
+//   /**
+//    * @param annotation -
+//    * @return map of semantic to text for annotations
+//    */
+//   static private Map<String, Collection<String>> createInfoMap( final IdentifiedAnnotation annotation,
+//                                                                 final IdentifiedAnnotation event,
+//                                                                 final Collection<BinaryTextRelation> relations ) {
+//      final Collection<UmlsConcept> concepts = OntologyConceptUtil.getUmlsConcepts( annotation );
+//      final Map<String, Collection<String>> semanticMap = new HashMap<>();
+//      final String coveredText = getCoveredText( annotation );
+//      final String safeText = getSafeText( coveredText );
+//      String relationText = getRelationText( annotation, relations );
+//      if ( event != null ) {
+//         relationText += getRelationText( event, relations );
+//      }
+//      for ( UmlsConcept concept : concepts ) {
+//         final SemanticGroup group = SemanticTui.getTui( concept )
+//               .getGroup();
+//         final String encoding = SemanticMarkup.getMarkup( group )
+//               .getEncoding();
+//         semanticMap.putIfAbsent( encoding, new HashSet<>() );
+//         final String prefText = getPreferredText( coveredText, concept );
+//         String text = getWikiText( safeText, prefText ) + NEWLINE + getCodes( concept ) + getCodedPrefText(
+//               prefText ) + relationText;
+//         if ( annotation instanceof EventMention ) {
+//            text += getDocTimeRel( (EventMention) annotation );
+//         }
+//         semanticMap.get( encoding )
+//               .add( text );
+//      }
+//      if ( concepts.isEmpty() ) {
+//         String postText = "";
+//         final SemanticGroup group = SemanticGroup.getBestGroup( annotation );
+//         final String encoding = SemanticMarkup.getMarkup( group )
+//               .getEncoding();
+//         if ( annotation instanceof EventMention ) {
+//            postText = getDocTimeRel( (EventMention) annotation );
+//         }
+//         semanticMap.putIfAbsent( encoding, new HashSet<>() );
+//         semanticMap.get( encoding )
+//               .add( safeText + NEWLINE + postText + relationText );
+//      }
+//      return semanticMap;
+//   }
+
+
+//   /**
+//    * @param annotation -
+//    * @return map of semantic to text for annotations
+//    */
+//   static private Map<String, Collection<String>> createInfoMap( final IdentifiedAnnotation annotation,
+//                                                                 final IdentifiedAnnotation event,
+//                                                                 final Collection<BinaryTextRelation> relations ) {
+//      final Collection<UmlsConcept> concepts = OntologyConceptUtil.getUmlsConcepts( annotation );
+//      final Map<String, Collection<String>> semanticMap = new HashMap<>();
+//      final String coveredText = getCoveredText( annotation );
+//      final String safeText = getSafeText( coveredText );
+//
+//      final SemanticGroup bestGroup = SemanticGroup.getBestGroup( annotation );
+//      final String encoding = SemanticMarkup.getMarkup( bestGroup )
+//                                            .getEncoding();
+//      final String groupInfos = concepts.stream()
+//                                        .map( SemanticTui::getTui )
+//                                        .map( SemanticTui::getGroup )
+//                                        .distinct()
+//                                        .map( g -> collectSemanticGroupInfo( g, concepts ) )
+//                                        .collect( Collectors.joining() );
+//      String dtrText = annotation instanceof EventMention
+//                        ? getDocTimeRel( (EventMention) annotation )
+//                        : "";
+//
+//      String relationText = getRelationText( annotation, relations );
+//
+//      semanticMap.computeIfAbsent( encoding, e -> new HashSet<>() )
+//                 .add( safeText + NEWLINE + groupInfos + NEWLINE + dtrText + NEWLINE + relationText );
+//      return semanticMap;
+//   }
+
 
    /**
     * @param annotation -
     * @return map of semantic to text for annotations
     */
-   static private Map<String, Collection<String>> createInfoMap( final IdentifiedAnnotation annotation,
-                                                                 final IdentifiedAnnotation event,
-                                                                 final Collection<BinaryTextRelation> relations ) {
+   static private Map<SemanticTui, String> createInfoMap( final IdentifiedAnnotation annotation ) {
       final Collection<UmlsConcept> concepts = OntologyConceptUtil.getUmlsConcepts( annotation );
-      final Map<String, Collection<String>> semanticMap = new HashMap<>();
-      final String coveredText = getCoveredText( annotation );
-      final String safeText = getSafeText( coveredText );
-      String relationText = getRelationText( annotation, relations );
-      if ( event != null ) {
-         relationText += getRelationText( event, relations );
-      }
-      for ( UmlsConcept concept : concepts ) {
-         final SemanticGroup group = SemanticTui.getTui( concept )
-               .getGroup();
-         final String encoding = SemanticMarkup.getMarkup( group )
-               .getEncoding();
-         semanticMap.putIfAbsent( encoding, new HashSet<>() );
-         final String prefText = getPreferredText( coveredText, concept );
-         String text = getWikiText( safeText, prefText ) + NEWLINE + getCodes( concept ) + getCodedPrefText(
-               prefText ) + relationText;
-         if ( annotation instanceof EventMention ) {
-            text += getDocTimeRel( (EventMention) annotation );
-         }
-         semanticMap.get( encoding )
-               .add( text );
-      }
-      if ( concepts.isEmpty() ) {
-         String postText = "";
-         final SemanticGroup group = SemanticGroup.getBestGroup( annotation );
-         final String encoding = SemanticMarkup.getMarkup( group )
-               .getEncoding();
-         if ( annotation instanceof EventMention ) {
-            postText = getDocTimeRel( (EventMention) annotation );
-         }
-         semanticMap.putIfAbsent( encoding, new HashSet<>() );
-         semanticMap.get( encoding )
-               .add( safeText + NEWLINE + postText + relationText );
+      final Map<SemanticTui, String> semanticMap = new EnumMap<>( SemanticTui.class );
+      final Collection<SemanticTui> tuis = concepts.stream()
+                                                   .map( SemanticTui::getTui )
+                                                   .collect( Collectors.toSet() );
+      for ( SemanticTui tui : tuis ) {
+         final String info = collectSemanticTypeInfo( tui, concepts );
+         semanticMap.put( tui, info );
       }
       return semanticMap;
    }
+
+
+   static private String collectSemanticGroupInfo( final SemanticGroup group, final Collection<UmlsConcept> concepts ) {
+      final String tuis = concepts.stream()
+                                  .map( SemanticTui::getTui )
+                                  .distinct()
+                                  .filter( t -> t.getGroup() == group )
+                                  .map( t -> collectSemanticTypeInfo( t, concepts ) )
+                                  .collect( Collectors.joining() );
+//      return SPACER + group.getLongName() + NEWLINE + tuis;
+      return tuis;
+   }
+
+   static private String collectSemanticTypeInfo( final SemanticTui type, final Collection<UmlsConcept> concepts ) {
+      final String cuis = concepts.stream()
+                                  .filter( c -> c.getTui() != null )
+                                  .filter( c -> SemanticTui.getTui( c ) == type )
+                                  .map( UmlsConcept::getCui )
+                                  .distinct()
+                                  .sorted()
+                                  .map( c -> collectCuiInfo( c, concepts ) )
+                                  .collect( Collectors.joining() );
+      return cuis;
+   }
+
+   static private String collectCuiInfo( final String cui, final Collection<UmlsConcept> concepts ) {
+      final String codes = concepts.stream()
+                                   .filter( c -> c.getCode() != null )
+                                   .filter( c -> !c.getCode()
+                                                   .isEmpty() )
+                                   .filter( c -> cui.equals( c.getCui() ) )
+                                   .map( c -> SPACER + c.getCodingScheme() + SPACER + c.getCode() + NEWLINE )
+                                   .sorted()
+                                   .collect( Collectors.joining() );
+      final String prefTexts = concepts.stream()
+                                       .filter( c -> c.getPreferredText() != null )
+                                       .filter( c -> !c.getPreferredText()
+                                                       .isEmpty() )
+                                       .filter( c -> cui.equals( c.getCui() ) )
+                                       .map( c -> SPACER + c.getPreferredText() + NEWLINE )
+                                       .distinct()
+                                       .sorted()
+                                       .collect( Collectors.joining() );
+      return prefTexts + SPACER + cui + NEWLINE + codes;
+   }
+
 
    static private String createWikiLink( final String coveredText, final String wikiText ) {
       return WIKI_BEGIN + wikiText + WIKI_CENTER + coveredText + WIKI_END;

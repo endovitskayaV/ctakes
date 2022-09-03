@@ -19,9 +19,12 @@
 package org.apache.ctakes.assertion.medfacts.cleartk.extractors;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ctakes.assertion.util.NegationManualDepContextAnalyzer;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.ctakes.dependency.parser.util.DependencyUtility;
 import org.apache.ctakes.typesystem.type.syntax.ConllDependencyNode;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
@@ -45,22 +48,27 @@ public class NegationDependencyFeatureExtractor implements
 	public List<Feature> extract(JCas jcas, IdentifiedAnnotation focusAnnotation)
 			throws CleartkExtractorException {
 		List<Feature> feats = new ArrayList<>();
-		Sentence sent = null;
-		
-		List<Sentence> sents = JCasUtil.selectCovering(jcas, Sentence.class, focusAnnotation.getBegin(), focusAnnotation.getEnd());
-		if(sents != null && sents.size() > 0){
-			sent = sents.get(0);
-		}else{
+
+		// get the dependency node for the annotation we're annotating
+		ConllDependencyNode headNode = DependencyUtility.getNominalHeadNode(jcas, focusAnnotation);
+
+		// walk up the tree to the root, which has a span of the whole sentence
+		ConllDependencyNode rootNode = headNode;
+		while(rootNode.getId() != 0){
+			rootNode = rootNode.getHead();
+		}
+		// use the root node to get all the nodes for this sentence
+		List<ConllDependencyNode> nodes = DependencyUtility.getDependencyNodes(jcas, rootNode);
+		if(nodes.size() > 400){
+			// most things with hundreds of tokens are not in fact syntactically interesting, but they take a really
+			// long time to process, so we can skip them.
 			return feats;
 		}
-		
-		List<ConllDependencyNode> nodes = DependencyUtility.getDependencyNodes(jcas, sent);
-		ConllDependencyNode headNode = DependencyUtility.getNominalHeadNode(jcas, focusAnnotation);
 		try {
 			boolean[] regexFeats = conAnal.findNegationContext(nodes, headNode);
 			for(int j = 0; j < regexFeats.length; j++){
 				if(regexFeats[j]){
-					feats.add(new Feature("DepPath_" + conAnal.getRegexName(j))); //"NEG_DEP_REGEX_"+j));
+					feats.add(new Feature("DepPath_" + conAnal.getRegexName(j)));
 				}
 			}
 		} catch (Exception e) {

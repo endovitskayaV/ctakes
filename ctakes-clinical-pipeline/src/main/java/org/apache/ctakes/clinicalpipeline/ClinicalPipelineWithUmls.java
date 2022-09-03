@@ -19,11 +19,8 @@ package org.apache.ctakes.clinicalpipeline;
  */
 
 
-import java.io.File;
-import java.util.Date;
-
 import org.apache.ctakes.assertion.util.AssertionConst;
-import org.apache.ctakes.core.util.DocumentIDAnnotationUtil;
+import org.apache.ctakes.core.util.doc.DocIdUtil;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
@@ -31,6 +28,9 @@ import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.CasIOUtil;
 import org.apache.uima.jcas.JCas;
 import org.cleartk.util.cr.FilesCollectionReader;
+
+import java.io.File;
+import java.util.Date;
 
 /**
  * Run the plaintext clinical pipeline, using the dictionary of terms from UMLS.
@@ -63,7 +63,7 @@ public class ClinicalPipelineWithUmls {
 				"desc/analysis_engine/AggregatePlaintextUMLSProcessor");
 
 		for(JCas jCas : SimplePipeline.iteratePipeline(collectionReader, pipelineIncludingUmlsDictionaries)){
-			CasIOUtil.writeXmi(jCas, new File(AssertionConst.evalOutputDir, DocumentIDAnnotationUtil.getDocumentID(jCas) + ".xmi"));
+         CasIOUtil.writeXmi( jCas, new File( AssertionConst.evalOutputDir, DocIdUtil.getDocumentID( jCas ) + ".xmi" ) );
 		}
 		
 	    System.out.println("Done at " + new Date());

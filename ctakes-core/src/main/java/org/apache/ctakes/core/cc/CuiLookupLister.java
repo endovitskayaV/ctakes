@@ -1,7 +1,7 @@
 package org.apache.ctakes.core.cc;
 
 
-import org.apache.ctakes.core.util.OntologyConceptUtil;
+import org.apache.ctakes.core.util.annotation.OntologyConceptUtil;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.ctakes.typesystem.type.textspan.Sentence;
@@ -33,14 +33,16 @@ public class CuiLookupLister extends AbstractJCasFileWriter {
                           final String outputDir,
                           final String documentId,
                           final String fileName ) throws IOException {
-      try ( Writer writer = new BufferedWriter( new FileWriter( outputDir + "/" + fileName + "_cui.txt" ) ) ) {
+      try ( Writer writer = new BufferedWriter( new FileWriter( outputDir + "/" + documentId + "_cui.txt" ) ) ) {
          final Map<Sentence, Collection<IdentifiedAnnotation>> sentenceCodes
                = JCasUtil.indexCovered( jCas, Sentence.class, IdentifiedAnnotation.class );
          for ( Map.Entry<Sentence, Collection<IdentifiedAnnotation>> entry : sentenceCodes.entrySet() ) {
-            final int sentenceBegin = entry.getKey().getBegin();
-            final int sentenceEnd = entry.getKey().getEnd();
+            final int sentenceBegin = entry.getKey()
+                                           .getBegin();
+            final int sentenceEnd = entry.getKey()
+                                         .getEnd();
             for ( IdentifiedAnnotation annotation : entry.getValue() ) {
-               if ( annotation.getBegin() == sentenceBegin && annotation.getEnd() == sentenceEnd ) {
+               if ( annotation.getBegin() >= sentenceBegin && annotation.getEnd() <= sentenceEnd ) {
                   for ( UmlsConcept umls : OntologyConceptUtil.getUmlsConcepts( annotation ) ) {
                      writer.write( umls.getCui() + '|' + umls.getTui() + '|' + annotation.getCoveredText() + '\n' );
                   }
