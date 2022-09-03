@@ -206,6 +206,7 @@
 		<module>ctakes-dictionary-lookup-fast-res</module>
       <module>ctakes-dockhand</module>
       <module>ctakes-tiny-rest</module>
+      <module>lact</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>
@@ -860,6 +861,11 @@
 				<artifactId>xmlunit</artifactId>
 				<version>${xmlunit.version}</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>lact</groupId>
+				<artifactId>lact</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

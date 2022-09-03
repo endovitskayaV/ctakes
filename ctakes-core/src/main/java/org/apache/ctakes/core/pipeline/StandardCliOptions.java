@@ -27,7 +27,7 @@ public interface StandardCliOptions {
          shortName = "p",
          longName = PIPER_FILE,
          description = "path to the piper file containing commands and parameters for pipeline configuration.",
-         defaultValue = "" )
+         defaultValue = "org/apache/ctakes/clinical/pipeline/DefaultFastPipeline.piper" )
    String getPiperPath();
 
    @Option(
