@@ -278,7 +278,11 @@ Equivalent to cTAKES: edu.mayo.bmi.uima.core.type.UmlsConcept</description>
            <description>preferredText is the preferred term. normally his is	 
            	the UMLS preferred name.</description>	 
            <rangeTypeName>uima.cas.String</rangeTypeName>	 
-         </featureDescription>        
+         </featureDescription>
+        <featureDescription>
+            <name>tName</name>
+            <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>

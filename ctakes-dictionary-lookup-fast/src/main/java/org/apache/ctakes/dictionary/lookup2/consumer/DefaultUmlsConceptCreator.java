@@ -1,5 +1,6 @@
 package org.apache.ctakes.dictionary.lookup2.consumer;
 
+import org.apache.ctakes.core.util.annotation.SemanticTui;
 import org.apache.ctakes.dictionary.lookup2.concept.Concept;
 import org.apache.ctakes.typesystem.type.refsem.UmlsConcept;
 import org.apache.uima.jcas.JCas;
@@ -59,6 +60,7 @@ final public class DefaultUmlsConceptCreator implements UmlsConceptCreator {
       if ( code != null ) {
          umlsConcept.setCode( code );
       }
+      umlsConcept.setTName(SemanticTui.getTui(tui).getSemanticType());
       return umlsConcept;
    }
 
