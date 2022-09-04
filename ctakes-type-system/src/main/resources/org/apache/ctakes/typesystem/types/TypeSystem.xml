@@ -2515,5 +2515,11 @@ More qualifying information on how the procedure was done.</description>
         </featureDescription>
       </features>
     </typeDescription>
+    <typeDescription>
+      <name>org.apache.ctakes.typesystem.type.textsem.MaterialMention</name>
+      <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+      <features>
+      </features>
+    </typeDescription>
   </types>
 </typeSystemDescription>

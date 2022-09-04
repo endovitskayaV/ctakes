@@ -35,7 +35,7 @@ public enum SemanticTui {
    T012( 12, "Bird", ENTITY ),
    T029( 29, "Body Location or Region", ANATOMY ),
    T091( 91, "Biomedical Occupation or Discipline", TITLE ),
-   T122( 122, "Biomedical or Dental Material", DRUG ),
+   T122( 122, "Biomedical or Dental Material", MATERIAL ),
    T023( 23, "Body Part, Organ, or Organ Component", ANATOMY ),
    T030( 30, "Body Space or Junction", ANATOMY ),
    T118( 118, "Carbohydrate", DRUG ),

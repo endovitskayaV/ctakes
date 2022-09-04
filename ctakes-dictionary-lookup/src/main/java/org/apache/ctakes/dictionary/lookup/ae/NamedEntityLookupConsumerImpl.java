@@ -27,6 +27,7 @@ import org.apache.ctakes.typesystem.type.textsem.DiseaseDisorderMention;
 import org.apache.ctakes.typesystem.type.textsem.EntityMention;
 import org.apache.ctakes.typesystem.type.textsem.IdentifiedAnnotation;
 import org.apache.ctakes.typesystem.type.textsem.LabMention;
+import org.apache.ctakes.typesystem.type.textsem.MaterialMention;
 import org.apache.ctakes.typesystem.type.textsem.MedicationMention;
 import org.apache.ctakes.typesystem.type.textsem.ProcedureMention;
 import org.apache.ctakes.typesystem.type.textsem.SignSymptomMention;
@@ -126,6 +127,8 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl {
              neAnnot = new LabMention( jcas );
          } else if ( typeId == CONST.NE_TYPE_ID_PROCEDURE ) {
              neAnnot = new ProcedureMention( jcas );
+         }  else if ( typeId == CONST.NE_TYPE_ID_MATERIAL ) {
+             neAnnot = new MaterialMention( jcas );
          } else {
              neAnnot = new EntityMention( jcas );
          }

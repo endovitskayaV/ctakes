@@ -14,6 +14,7 @@ import static org.apache.ctakes.typesystem.type.constants.CONST.*;
 
 public enum SemanticGroup {
    DRUG( NE_TYPE_ID_DRUG, "Drug", "Medication", MedicationMention.class, MedicationMention::new ),
+   MATERIAL(NE_TYPE_ID_MATERIAL, "Material", "Biomedical or Dental Material", MaterialMention.class, MaterialMention::new ),
    DISORDER( NE_TYPE_ID_DISORDER, "Disorder", "Disease/Disorder", DiseaseDisorderMention.class, DiseaseDisorderMention::new ),
    FINDING( NE_TYPE_ID_FINDING, "Finding", "Sign/Symptom", SignSymptomMention.class, SignSymptomMention::new ),
    PROCEDURE( NE_TYPE_ID_PROCEDURE, "Procedure", "Procedure", ProcedureMention.class, ProcedureMention::new ),

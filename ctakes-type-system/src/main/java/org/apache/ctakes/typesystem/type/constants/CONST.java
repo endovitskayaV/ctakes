@@ -42,6 +42,7 @@ public class CONST {
    static public final int NE_TYPE_ID_TIME_MENTION = 1005;
    static public final int NE_TYPE_ID_GENERIC_MODIFIER = 1006;
    static public final int NE_TYPE_ID_LAB_VALUE_MODIFIER = 1007;
+   static public final int NE_TYPE_ID_MATERIAL = 1008;
 
 	public static final int MODIFIER_TYPE_ID_UNKNOWN = 0;
 	public static final int MODIFIER_TYPE_ID_COURSE_CLASS = 1;
