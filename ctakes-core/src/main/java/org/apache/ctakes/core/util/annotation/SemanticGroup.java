@@ -15,6 +15,12 @@ import static org.apache.ctakes.typesystem.type.constants.CONST.*;
 public enum SemanticGroup {
    DRUG( NE_TYPE_ID_DRUG, "Drug", "Medication", MedicationMention.class, MedicationMention::new ),
    MATERIAL(NE_TYPE_ID_MATERIAL, "Material", "Biomedical or Dental Material", MaterialMention.class, MaterialMention::new ),
+   FOOD(NE_TYPE_ID_FOOD, "Food", "Food", FoodMention.class, FoodMention::new ),
+   SUBSTANCE(NE_TYPE_ID_SUBSTANCE, "Substance", "Substance", SubstanceMention.class, SubstanceMention::new ),
+   PHARM_SUBSTANCE(NE_TYPE_ID_SUBSTANCE, "Pharmacologic Substance", "Pharmacologic Substance", PharmSubstanceMention.class, PharmSubstanceMention::new ),
+   BIO_SUBSTANCE(NE_TYPE_ID_SUBSTANCE, "Biologically Active Substance", "Biologically Active Substance", BioSubstanceMention.class, BioSubstanceMention::new ),
+   CHEMICAL(NE_TYPE_ID_CHEMICAL, "Chemical", "Chemical", ChemicalMention.class, ChemicalMention::new ),
+   PROTEIN(NE_TYPE_ID_PROTEIN, "Protein", "Amino Acid, Peptide, or Protein", ProteinMention.class, ProteinMention::new ),
    DISORDER( NE_TYPE_ID_DISORDER, "Disorder", "Disease/Disorder", DiseaseDisorderMention.class, DiseaseDisorderMention::new ),
    FINDING( NE_TYPE_ID_FINDING, "Finding", "Sign/Symptom", SignSymptomMention.class, SignSymptomMention::new ),
    PROCEDURE( NE_TYPE_ID_PROCEDURE, "Procedure", "Procedure", ProcedureMention.class, ProcedureMention::new ),

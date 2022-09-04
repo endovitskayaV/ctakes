@@ -2521,5 +2521,41 @@ More qualifying information on how the procedure was done.</description>
       <features>
       </features>
     </typeDescription>
+    <typeDescription>
+        <name>org.apache.ctakes.typesystem.type.textsem.FoodMention</name>
+        <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+        <features>
+        </features>
+    </typeDescription>
+    <typeDescription>
+        <name>org.apache.ctakes.typesystem.type.textsem.SubstanceMention</name>
+        <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+        <features>
+        </features>
+    </typeDescription>
+    <typeDescription>
+        <name>org.apache.ctakes.typesystem.type.textsem.ChemicalMention</name>
+        <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+        <features>
+        </features>
+    </typeDescription>
+        <typeDescription>
+        <name>org.apache.ctakes.typesystem.type.textsem.PharmSubstanceMention</name>
+        <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+        <features>
+        </features>
+    </typeDescription>
+      <typeDescription>
+          <name>org.apache.ctakes.typesystem.type.textsem.BioSubstanceMention</name>
+          <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+          <features>
+          </features>
+      </typeDescription>
+      <typeDescription>
+          <name>org.apache.ctakes.typesystem.type.textsem.ProteinMention</name>
+          <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+          <features>
+          </features>
+      </typeDescription>
   </types>
 </typeSystemDescription>

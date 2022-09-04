@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import static org.apache.ctakes.core.util.annotation.SemanticGroup.*;
 
 public enum SemanticTui {
-   T116( 116, "Amino Acid, Peptide, or Protein", DRUG ),
+   T116( 116, "Amino Acid, Peptide, or Protein", PROTEIN ),
    T020( 20, "Acquired Abnormality", DISORDER ),
    T052( 52, "Activity", EVENT ),
    T100( 100, "Age Group", SUBJECT ),
@@ -26,7 +26,7 @@ public enum SemanticTui {
    T017( 17, "Anatomical Structure", ANATOMY ),
    T195( 195, "Antibiotic", DRUG ),
    T194( 194, "Archaeon", ENTITY ),
-   T123( 123, "Biologically Active Substance", DRUG ),
+   T123( 123, "Biologically Active Substance", BIO_SUBSTANCE ),
    T007( 7, "Bacterium", ENTITY ),
    T031( 31, "Body Substance", FINDING ),
    T022( 22, "Body System", ANATOMY ),
@@ -43,9 +43,9 @@ public enum SemanticTui {
    T043( 43, "Cell Function", FINDING ),
    T025( 25, "Cell", ANATOMY ),
    T019( 19, "Congenital Abnormality", DISORDER ),
-   T103( 103, "Chemical", DRUG ),
-   T120( 120, "Chemical Viewed Functionally", DRUG ),
-   T104( 104, "Chemical Viewed Structurally", DRUG ),
+   T103(103, "Chemical", CHEMICAL),
+   T120(120, "Chemical Viewed Functionally", CHEMICAL),
+   T104(104, "Chemical Viewed Structurally", CHEMICAL),
    T185( 185, "Classification", FINDING ),
    T201( 201, "Clinical Attribute", CLINICAL_ATTRIBUTE ),
    T200( 200, "Clinical Drug", DRUG ),
@@ -70,7 +70,7 @@ public enum SemanticTui {
    T013( 13, "Fish", ENTITY ),
    T033( 33, "Finding", FINDING ),
    T004( 4, "Fungus", ENTITY ),
-   T168( 168, "Food", DRUG ),
+   T168( 168, "Food", FOOD ),
    T169( 169, "Functional Concept", FINDING ),
    // double-check
    T045( 45, "Genetic Function", FINDING ),
@@ -125,7 +125,7 @@ public enum SemanticTui {
    T072( 72, "Physical Object", ENTITY ),
    T067( 67, "Phenomenon or Process", PHENOMENON ),
    T039( 39, "Physiologic Function", FINDING ),
-   T121( 121, "Pharmacologic Substance", DRUG ),
+   T121( 121, "Pharmacologic Substance", PHARM_SUBSTANCE ),
    T002( 2, "Plant", ENTITY ),
    T101( 101, "Patient or Disabled Group", SUBJECT ),
    T098( 98, "Population Group", SUBJECT ),
@@ -139,7 +139,7 @@ public enum SemanticTui {
    T075( 75, "Research Device", DEVICE ),
    T006( 6, "Rickettsia or Chlamydia", DISORDER ),
    T089( 89, "Regulation or Law", ENTITY ),
-   T167( 167, "Substance", DRUG ),
+   T167( 167, "Substance", SUBSTANCE ),
    // Double-check
    T095( 95, "Self-help or Relief Organization", ENTITY ),
    T054( 54, "Social Behavior", FINDING ),
