@@ -45,8 +45,12 @@ public class CONST {
    static public final int NE_TYPE_ID_MATERIAL = 1008;
    static public final int NE_TYPE_ID_FOOD = 1009;
    static public final int NE_TYPE_ID_SUBSTANCE = 1010;
-   static public final int NE_TYPE_ID_CHEMICAL = 1011;
-   static public final int NE_TYPE_ID_PROTEIN = 1012;
+   static public final int NE_TYPE_ID_PHARM_SUBSTANCE = 1011;
+   static public final int NE_TYPE_ID_BIO_SUBSTANCE = 1012;
+   static public final int NE_TYPE_ID_CHEMICAL = 1013;
+   static public final int NE_TYPE_ID_PROTEIN = 1014;
+   static public final int NE_TYPE_ID_ELEMENT = 1015;
+   static public final int NE_TYPE_ID_IMMUNE_FACTOR = 1016;
 
 	public static final int MODIFIER_TYPE_ID_UNKNOWN = 0;
 	public static final int MODIFIER_TYPE_ID_COURSE_CLASS = 1;
