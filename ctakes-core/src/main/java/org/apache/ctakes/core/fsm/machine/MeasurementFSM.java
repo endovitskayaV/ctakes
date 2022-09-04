@@ -104,6 +104,9 @@ public class MeasurementFSM {
 		iv_fullTextSet.add("centimeters");
 		iv_fullTextSet.add("millimeter");
 		iv_fullTextSet.add("millimeters");
+		iv_fullTextSet.add("day");
+		iv_fullTextSet.add("days");
+		iv_fullTextSet.add("days");
 
 		iv_shortTextSet.add("gal");
 		iv_shortTextSet.add("gals");
@@ -131,6 +134,8 @@ public class MeasurementFSM {
 		iv_shortTextSet.add("cm");
 		iv_shortTextSet.add("mm");
 		iv_shortTextSet.add("cc");
+		iv_shortTextSet.add("h");
+		iv_shortTextSet.add("ng / ml");
 
 		iv_textNumberSet.add("one");
 		iv_textNumberSet.add("two");
