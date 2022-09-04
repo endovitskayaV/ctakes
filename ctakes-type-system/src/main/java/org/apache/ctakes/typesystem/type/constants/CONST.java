@@ -51,6 +51,7 @@ public class CONST {
    static public final int NE_TYPE_ID_PROTEIN = 1014;
    static public final int NE_TYPE_ID_ELEMENT = 1015;
    static public final int NE_TYPE_ID_IMMUNE_FACTOR = 1016;
+   static public final int NE_TYPE_ID_BODY_SUBSTANCE = 1017;
 
 	public static final int MODIFIER_TYPE_ID_UNKNOWN = 0;
 	public static final int MODIFIER_TYPE_ID_COURSE_CLASS = 1;

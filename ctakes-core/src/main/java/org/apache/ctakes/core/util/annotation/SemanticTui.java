@@ -28,7 +28,7 @@ public enum SemanticTui {
    T194( 194, "Archaeon", ENTITY ),
    T123( 123, "Biologically Active Substance", BIO_SUBSTANCE ),
    T007( 7, "Bacterium", ENTITY ),
-   T031( 31, "Body Substance", FINDING ),
+   T031( 31, "Body Substance", BODY_SUBSTANCE ),
    T022( 22, "Body System", ANATOMY ),
    T053( 53, "Behavior", FINDING ),
    T038( 38, "Biologic Function", PHENOMENON ),

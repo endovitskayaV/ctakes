@@ -23,6 +23,7 @@ public enum SemanticGroup {
    PROTEIN(NE_TYPE_ID_PROTEIN, "Protein", "Amino Acid, Peptide, or Protein", ProteinMention.class, ProteinMention::new ),
    ELEMENT(NE_TYPE_ID_ELEMENT, "Element", "Element, Ion, or Isotope", ElementMention.class, ElementMention::new ),
    IMMUNE_FACTOR(NE_TYPE_ID_IMMUNE_FACTOR, "Immunologic Factor", "Immunologic Factor", ImmuneFactorMention.class, ImmuneFactorMention::new ),
+   BODY_SUBSTANCE(NE_TYPE_ID_BODY_SUBSTANCE, "Body Substance", "Body Substance", BodySubstanceMention.class, BodySubstanceMention::new ),
    DISORDER( NE_TYPE_ID_DISORDER, "Disorder", "Disease/Disorder", DiseaseDisorderMention.class, DiseaseDisorderMention::new ),
    FINDING( NE_TYPE_ID_FINDING, "Finding", "Sign/Symptom", SignSymptomMention.class, SignSymptomMention::new ),
    PROCEDURE( NE_TYPE_ID_PROCEDURE, "Procedure", "Procedure", ProcedureMention.class, ProcedureMention::new ),
