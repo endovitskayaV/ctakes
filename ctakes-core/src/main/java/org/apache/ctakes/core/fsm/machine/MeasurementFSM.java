@@ -157,6 +157,10 @@ public class MeasurementFSM {
 		iv_textNumberSet.add("ten");
 
 		multiWordConcentrationUnitStartSet.add("ng");
+		multiWordConcentrationUnitStartSet.add("g");
+		multiWordConcentrationUnitStartSet.add("µg");
+
+		multiWordConcentrationUnitEndSet.add("l");
 		multiWordConcentrationUnitEndSet.add("ml");
 
 		iv_measurementToMachineMap.put(BLOOD_PRESSURE, getBloodPressureMachine());
