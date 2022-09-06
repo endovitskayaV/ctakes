@@ -28,8 +28,10 @@ import org.apache.ctakes.typesystem.type.textspan.Segment;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
+import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.FSIterator;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
 import org.apache.uima.jcas.tcas.Annotation;
@@ -174,5 +176,12 @@ public class TokenizerAnnotator extends JCasAnnotator_ImplBase {
 
 			tokenCount++;
 		}
+	}
+
+	public static AnalysisEngineDescription createAnnotatorDescription(String[] segmentsToSkip, int freqCutoff)
+			throws ResourceInitializationException {
+		return AnalysisEngineFactory.createEngineDescription(TokenizerAnnotator.class,
+				"SegmentsToSkip", segmentsToSkip,
+				"FreqCutoff", freqCutoff);
 	}
 }

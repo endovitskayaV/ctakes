@@ -43,9 +43,11 @@ import org.apache.ctakes.typesystem.type.textspan.Sentence;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
+import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.analysis_engine.annotator.AnnotatorProcessException;
 import org.apache.uima.cas.FSIterator;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
 import org.apache.uima.jcas.cas.FSArray;
@@ -120,8 +122,44 @@ public class DrugMentionAnnotator extends JCasAnnotator_ImplBase
 	{
 		super.initialize(annotCtx);
 
-		iv_medicationRelatedSections = ParamUtil.getStringParameterValuesSet(
-					PARAM_SEGMENTS_MEDICATION_RELATED, annotCtx);
+//		iv_medicationRelatedSections = ParamUtil.getStringParameterValuesSet(
+//					PARAM_SEGMENTS_MEDICATION_RELATED, annotCtx);
+		iv_medicationRelatedSections = new HashSet<>(Arrays.asList(
+                        "20101",
+                        "20102",
+                        "20103",
+                        "20104",
+                        "20105",
+                        "20106",
+                        "20107",
+                        "20108",
+                        "20109",
+                        "20110",
+                        "20111",
+                        "20112",
+                        "20113",
+                        "20114",
+                        "20115",
+                        "20116",
+                        "20117",
+                        "20118",
+                        "20119",
+                        "20120",
+                        "20121",
+                        "20122",
+                        "20123",
+                        "20124",
+                        "20125",
+                        "20126",
+                        "20127",
+                        "20128",
+                        "20129",
+                        "20130",
+                        "20110",
+                        "20133",
+                        "20147",
+                        "SIMPLE_SEGMENT"
+                ));
 
 
 		iv_fractionFSM = new FractionStrengthFSM();
@@ -3660,5 +3698,14 @@ private int[][] getWindowSpan(JCas jcas,  String sectionType, int typeAnnotation
 			}
 		}
 		return elementClosest;
+	}
+
+	public static AnalysisEngineDescription createAnnotatorDescription(String distance, String distanceAnnType, String statusBoundaryAnnType)
+			throws ResourceInitializationException {
+		return AnalysisEngineFactory.createEngineDescription(DrugMentionAnnotator.class,
+//				PARAM_SEGMENTS_MEDICATION_RELATED, medicationRelatedSection,
+				DISTANCE, distance,
+				DISTANCE_ANN_TYPE, distanceAnnType,
+				BOUNDARY_ANN_TYPE, statusBoundaryAnnType);
 	}
 }

@@ -90,7 +90,7 @@ public class Chunker extends JCasAnnotator_ImplBase {
 	@ConfigurationParameter(
 	    name = PARAM_CHUNKER_CREATOR_CLASS,
 	    mandatory = false,
-	    defaultValue = "org.apache.ctakes.chunker.ae.DefaultChunkCreator",
+	    defaultValue = "org.apache.ctakes.chunker.ae.PhraseTypeChunkCreator",
 	    description = "The class that will create the chunks"
 	    )
   String chunkerCreatorClassName;

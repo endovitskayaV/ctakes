@@ -124,4 +124,13 @@ public class DefaultJCasTermAnnotator extends AbstractJCasTermAnnotator {
             ConfigParameterConstants.PARAM_LOOKUP_XML, descriptorPath );
    }
 
+    public static AnalysisEngineDescription createAnnotatorDescription(String windowAnnotations,  String exclusionTags, int minimumSpan, final String dictionaryDescriptor )
+         throws ResourceInitializationException {
+      return AnalysisEngineFactory.createEngineDescription( DefaultJCasTermAnnotator.class,
+            "windowAnnotations", windowAnnotations,
+            "exclusionTags", exclusionTags ,
+            "minimumSpan", minimumSpan ,
+            "dictionaryDescriptor", dictionaryDescriptor );
+   }
+
 }

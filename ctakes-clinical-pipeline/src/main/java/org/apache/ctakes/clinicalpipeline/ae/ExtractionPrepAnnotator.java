@@ -18,6 +18,7 @@
  */
 package org.apache.ctakes.clinicalpipeline.ae;
 
+import org.apache.ctakes.chunker.ae.adjuster.ChunkAdjuster;
 import org.apache.ctakes.core.pipeline.PipeBitInfo;
 import org.apache.ctakes.core.util.annotation.WordTokenUtil;
 import org.apache.ctakes.typesystem.type.refsem.OntologyConcept;
@@ -29,8 +30,10 @@ import org.apache.ctakes.typesystem.type.util.Pair;
 import org.apache.ctakes.typesystem.type.util.Pairs;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
+import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.FSIterator;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
 import org.apache.uima.jcas.cas.FSArray;
@@ -56,6 +59,10 @@ import java.util.Set;
 public class ExtractionPrepAnnotator extends JCasAnnotator_ImplBase {
    private String iv_annotVerPropKey;
    private int iv_annotVer;
+
+   public static final String PARAM_ANNOTATION_VERSION = "AnnotationVersion";
+   public static final String PARAM_ANNOTATION_VERSION_PROP_KEY = "AnnotationVersionPropKey";
+
 
    /**
     * Method invoked by UIMA framework to initialize this annotator
@@ -194,4 +201,12 @@ public class ExtractionPrepAnnotator extends JCasAnnotator_ImplBase {
          }
       }
    }
+
+   public static AnalysisEngineDescription createAnnotatorDescription(int annotationVersion, String annotationVersionPropKey) throws ResourceInitializationException{
+	  return AnalysisEngineFactory.createEngineDescription(ExtractionPrepAnnotator.class,
+	      ExtractionPrepAnnotator.PARAM_ANNOTATION_VERSION,
+	      annotationVersion,
+	      ExtractionPrepAnnotator.PARAM_ANNOTATION_VERSION_PROP_KEY,
+	      annotationVersionPropKey);
+	}
 }
