@@ -153,6 +153,15 @@ public class ContextDependentTokenizerAnnotator extends JCasAnnotator_ImplBase {
 			while (measurementTokenItr.hasNext()) {
 				MeasurementToken mt = measurementTokenItr.next();
 				MeasurementAnnotation ma = new MeasurementAnnotation(jcas, mt.getStartOffset(), mt.getEndOffset());
+				if (mt instanceof TypedMeasurementToken) {
+					ma.setMeasurementType(((TypedMeasurementToken) mt).getMeasurementType().name());
+					ma.setQuantityStart(((TypedMeasurementToken) mt).getQuantityStart());
+					ma.setQuantityEnd(((TypedMeasurementToken) mt).getQuantityEnd());
+					ma.setUnitStart(((TypedMeasurementToken) mt).getUnitStart());
+					ma.setUnitEnd(((TypedMeasurementToken) mt).getUnitEnd());
+				} else {
+					System.out.println("not typed");
+				}
 				ma.addToIndexes();
 			}
 

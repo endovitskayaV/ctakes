@@ -31,6 +31,7 @@ import org.apache.ctakes.core.fsm.condition.PunctuationValueCondition;
 import org.apache.ctakes.core.fsm.condition.RangeCondition;
 import org.apache.ctakes.core.fsm.condition.WordSetCondition;
 import org.apache.ctakes.core.fsm.output.MeasurementToken;
+import org.apache.ctakes.core.fsm.output.TypedMeasurementToken;
 import org.apache.ctakes.core.fsm.state.NamedState;
 import org.apache.ctakes.core.fsm.token.BaseToken;
 
@@ -39,6 +40,10 @@ import net.openai.util.fsm.Condition;
 import net.openai.util.fsm.Machine;
 import net.openai.util.fsm.State;
 
+import static org.apache.ctakes.core.fsm.machine.MeasurementType.BLOOD_PRESSURE;
+import static org.apache.ctakes.core.fsm.machine.MeasurementType.CONCENTRATION;
+import static org.apache.ctakes.core.fsm.machine.MeasurementType.GENERAL_QUANTITY;
+
 /**
  * Uses one or more finite state machines to detect measurements in the given
  * input of tokens.
@@ -46,13 +51,18 @@ import net.openai.util.fsm.State;
  * @author Mayo Clinic
  */
 public class MeasurementFSM {
+	public static final String QUANTITY_STATE = "QUANTITY";
+	public static final String UNIT_START = "UNIT_START";
 	// text fractions
 	Set<String> iv_fullTextSet = new HashSet<String>();
 	Set<String> iv_shortTextSet = new HashSet<String>();
 	Set<String> iv_textNumberSet = new HashSet<String>();
 
+	Set<String> multiWordConcentrationUnitStartSet = new HashSet<>();
+	Set<String> multiWordConcentrationUnitEndSet = new HashSet<>();
+
 	// contains the finite state machines
-	private Set<Machine> iv_machineSet = new HashSet<Machine>();
+	private Map<MeasurementType, Machine> iv_measurementToMachineMap = new HashMap<>();
 
 	/**
 	 * 
@@ -106,7 +116,6 @@ public class MeasurementFSM {
 		iv_fullTextSet.add("millimeters");
 		iv_fullTextSet.add("day");
 		iv_fullTextSet.add("days");
-		iv_fullTextSet.add("days");
 
 		iv_shortTextSet.add("gal");
 		iv_shortTextSet.add("gals");
@@ -135,7 +144,6 @@ public class MeasurementFSM {
 		iv_shortTextSet.add("mm");
 		iv_shortTextSet.add("cc");
 		iv_shortTextSet.add("h");
-		iv_shortTextSet.add("ng / ml");
 
 		iv_textNumberSet.add("one");
 		iv_textNumberSet.add("two");
@@ -148,8 +156,12 @@ public class MeasurementFSM {
 		iv_textNumberSet.add("nine");
 		iv_textNumberSet.add("ten");
 
-		iv_machineSet.add(getBloodPressureMachine());
-		iv_machineSet.add(getSubstanceQuantityMachine());
+		multiWordConcentrationUnitStartSet.add("ng");
+		multiWordConcentrationUnitEndSet.add("ml");
+
+		iv_measurementToMachineMap.put(BLOOD_PRESSURE, getBloodPressureMachine());
+		iv_measurementToMachineMap.put(GENERAL_QUANTITY, getSubstanceQuantityMachine());
+		iv_measurementToMachineMap.put(CONCENTRATION, getConcentrationMachine());
 	}
 
 	/**
@@ -206,7 +218,7 @@ public class MeasurementFSM {
 		endState.setEndStateFlag(true);
 
 		Machine m = new Machine(startState);
-		State quanitityState = new NamedState("QUANITITY");
+		State quanitityState = new NamedState(QUANTITY_STATE);
 
 		Condition numberCondition = new NumberCondition();
 		Condition numberTextCondition = new WordSetCondition(iv_textNumberSet,
@@ -231,6 +243,46 @@ public class MeasurementFSM {
 		return m;
 	}
 
+	private Machine getConcentrationMachine() {
+		State startState = new NamedState("START");
+		State endState = new NamedState("END");
+		State fslashState = new NamedState("FSLASH");
+		endState.setEndStateFlag(true);
+
+		Machine m = new Machine(startState);
+		State quanitityState = new NamedState(QUANTITY_STATE);
+		State unitStartState = new NamedState(UNIT_START);
+
+		Condition numberCondition = new NumberCondition();
+		Condition numberTextCondition = new WordSetCondition(iv_textNumberSet,
+				false);
+		Condition rangeCondition = new RangeCondition();
+
+		Condition unitStartCondition = new WordSetCondition(multiWordConcentrationUnitStartSet,
+				false);
+		Condition fslashCondition = new PunctuationValueCondition('/');
+		Condition unitEndCondition = new WordSetCondition(multiWordConcentrationUnitEndSet,
+				false);
+
+		startState.addTransition(numberCondition, quanitityState);
+		startState.addTransition(rangeCondition, quanitityState);
+		startState.addTransition(numberTextCondition, quanitityState);
+		startState.addTransition(new AnyCondition(), startState);
+
+		quanitityState.addTransition(unitStartCondition, unitStartState);
+		quanitityState.addTransition(new AnyCondition(), startState);
+
+		unitStartState.addTransition(fslashCondition, fslashState);
+		unitStartState.addTransition(new AnyCondition(), startState);
+
+		fslashState.addTransition(unitEndCondition, endState);
+		fslashState.addTransition(new AnyCondition(), startState);
+
+		endState.addTransition(new AnyCondition(), startState);
+
+		return m;
+	}
+
 	/**
 	 * Executes the finite state machines.
 	 * 
@@ -243,6 +295,8 @@ public class MeasurementFSM {
 		// maps a fsm to a token start index
 		// key = fsm , value = token start index
 		Map<Machine, Integer> tokenStartMap = new HashMap<Machine, Integer>();
+		Map<Machine, Integer> tokenQuantityEndMap = new HashMap<Machine, Integer>();
+		Map<Machine, Integer> tokenUnitStartMap = new HashMap<Machine, Integer>();
 
 		Iterator<? extends BaseToken> overrideTokenItr = overrideSet.iterator();
 		// key = start offset, value = override BaseToken object
@@ -278,9 +332,11 @@ public class MeasurementFSM {
 				}
 			}
 
-			Iterator<Machine> machineItr = iv_machineSet.iterator();
+			Iterator<Map.Entry<MeasurementType, Machine>> machineItr = iv_measurementToMachineMap.entrySet().iterator();
 			while (machineItr.hasNext()) {
-				Machine fsm = machineItr.next();
+				Map.Entry<MeasurementType, Machine> entry = machineItr.next();
+				Machine fsm = entry.getValue();
+				MeasurementType measurementType = entry.getKey();
 
 				fsm.input(token);
 
@@ -288,6 +344,14 @@ public class MeasurementFSM {
 				if (currentState.getStartStateFlag()) {
 					tokenStartMap.put(fsm, new Integer(i));
 				}
+
+				if (currentState.getName().equals(QUANTITY_STATE)){
+					tokenQuantityEndMap.put(fsm,i);
+				}
+				if (currentState.getName().equals(UNIT_START)){
+					tokenUnitStartMap.put(fsm, i);
+				}
+
 				if (currentState.getEndStateFlag()) {
 					Object o = tokenStartMap.get(fsm);
 					int tokenStartIndex;
@@ -302,9 +366,31 @@ public class MeasurementFSM {
 					}
 					BaseToken startToken = tokens.get(tokenStartIndex);
 					BaseToken endToken = token;
-					MeasurementToken measurementToken = new MeasurementToken(
-							startToken.getStartOffset(), endToken
-									.getEndOffset());
+
+					int quantityStart = 0;
+					int quantityEnd = 0;
+					int unitStart = 0;
+					int unitEnd = 0;
+					if (measurementType == GENERAL_QUANTITY || measurementType == CONCENTRATION) {
+						quantityStart = startToken.getStartOffset();
+
+						int endTokenQuantityIndex = tokenQuantityEndMap.get(fsm);
+						quantityEnd = tokens.get(endTokenQuantityIndex).getEndOffset();
+
+						unitEnd = endToken.getEndOffset();
+
+						if (measurementType == GENERAL_QUANTITY) {
+							unitStart = endToken.getStartOffset();
+						}
+						if (measurementType == CONCENTRATION) {
+							int startTokenUnitIndex = tokenUnitStartMap.get(fsm);
+							unitStart = tokens.get(startTokenUnitIndex).getStartOffset();
+						}
+					}
+
+					TypedMeasurementToken measurementToken = new TypedMeasurementToken(
+							startToken.getStartOffset(), endToken.getEndOffset(), measurementType,
+							quantityStart, quantityEnd, unitStart, unitEnd);
 					measurementSet.add(measurementToken);
 					fsm.reset();
 				}
@@ -313,9 +399,11 @@ public class MeasurementFSM {
 
 		// cleanup
 		tokenStartMap.clear();
+		tokenQuantityEndMap.clear();
+		tokenUnitStartMap.clear();
 
 		// reset machines
-		Iterator<Machine> itr = iv_machineSet.iterator();
+		Iterator<Machine> itr = iv_measurementToMachineMap.values().iterator();
 		while (itr.hasNext()) {
 			Machine fsm = itr.next();
 			fsm.reset();
