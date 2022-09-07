@@ -38,7 +38,7 @@ final public class ProcessDirBuilderRunner {
         builder.set(ConfigParameterConstants.PARAM_INPUTDIR, options.getInputDirectory());
         builder.set(ConfigParameterConstants.PARAM_OUTPUTDIR, options.getXmiOutDirectory());
         builder
-                .addDescription(SimpleSegmentAnnotator.createAnnotatorDescription("SimpleSegmentAnnotator/SegmentID"))
+                .addDescription(SimpleSegmentAnnotator.createAnnotatorDescription())
                 .addDescription(SentenceDetector.createAnnotatorDescription())
                 .addDescription(TokenizerAnnotatorPTB.createAnnotatorDescription())
                 .addDescription(LvgAnnotator.createAnnotatorDescription())
