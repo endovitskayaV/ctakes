@@ -6,6 +6,7 @@ import org.apache.ctakes.core.pipeline.CliOptionals;
 import org.apache.ctakes.core.pipeline.PipelineBuilder;
 import org.apache.ctakes.core.pipeline.PiperFileReader;
 import org.apache.ctakes.core.pipeline.StandardCliOptions;
+import org.apache.ctakes.coreference.factory.CoreferenceAnnotatorFactory;
 import org.apache.ctakes.dictionary.lookup2.ae.JCasTermAnnotator;
 
 final public class ClinicalRunner {
@@ -27,7 +28,7 @@ final public class ClinicalRunner {
         builder.set(ConfigParameterConstants.PARAM_INPUTDIR, options.getInputDirectory());
         builder.set(ConfigParameterConstants.PARAM_OUTPUTDIR, options.getXmiOutDirectory());
         reader.setCliOptionals(options);
-        reader.loadPipelineFile(options.getPiperPath());
+        reader.loadPipelineFile("pipers/Full.piper");
         builder.readFiles(options.getInputDirectory());
         builder.writeXMIs(options.getXmiOutDirectory());
         builder.run();

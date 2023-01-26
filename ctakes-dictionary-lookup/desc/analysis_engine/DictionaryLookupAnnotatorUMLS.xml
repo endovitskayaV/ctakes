@@ -158,7 +158,7 @@
         <name>LookupDescriptorFile</name>
         <description/>
         <fileResourceSpecifier>
-          <fileUrl>file:org/apache/ctakes/dictionary/lookup/LookupDesc_Db.xml</fileUrl>
+          <fileUrl>file:ctakes-dictionary-lookup-res/src/main/resources/org/apache/ctakes/dictionary/lookup/LookupDesc.xml</fileUrl>
         </fileResourceSpecifier>
         <implementationName>org.apache.ctakes.core.resource.FileResourceImpl</implementationName>
       </externalResource>

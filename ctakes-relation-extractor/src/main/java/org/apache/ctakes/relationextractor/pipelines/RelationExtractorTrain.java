@@ -64,13 +64,13 @@ public class RelationExtractorTrain {
 
     @Option(
         longName = "resources-dir",
-        defaultValue = "../ctakes-relation-extractor-res/src/main/resources",
+        defaultValue = "C:\\Users\\vendovitskaya\\IdeaProjects\\ctakes-fork\\ctakes-relation-extractor-res\\src\\main\\resources",
         description = "the directory where resources (e.g. models) should be written")
     public File getResourcesDirectory();
 
     @Option(
         longName = "descriptors-dir",
-        defaultValue = "desc/analysis_engine",
+        defaultValue = "C:\\Users\\vendovitskaya\\IdeaProjects\\ctakes-fork\\ctakes-relation-extractor\\desc\\analysis_engine",
         description = "the directory where descriptors should be written")
     public File getDescriptorsDirectory();
   }

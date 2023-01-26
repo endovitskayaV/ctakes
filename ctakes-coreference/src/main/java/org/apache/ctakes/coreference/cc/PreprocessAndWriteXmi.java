@@ -86,7 +86,7 @@ public class PreprocessAndWriteXmi {
 //			TypeSystemDescriptionFactory.createTypeSystemDescriptionFromPath("../common-type-system/desc/common_type_system.xml", 
 //																			 "../assertion/desc/medfactsTypeSystem.xml");
 
-      AnalysisEngine ae = AnalysisEngineFactory.createEngineFromPath( "desc/analysis_engine/ODIESvmVectorCreator.xml" );
+      AnalysisEngine ae = AnalysisEngineFactory.createEngineFromPath( "C:\\Users\\vendovitskaya\\IdeaProjects\\ctakes-fork\\ctakes-coreference\\desc\\analysis_engine\\ODIESvmVectorCreator.xml" );
 
       CollectionReader reader = CollectionReaderFactory.createReaderFromPath(
             "../ctakes-core/desc/collection_reader/FilesInDirectoryCollectionReader.xml",

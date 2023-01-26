@@ -138,12 +138,14 @@ public class RelationExtractorEvaluation extends RelationEvaluation_ImplBase {
 
 		@Option(
 				longName = "train-corpus",
-				description = "Corpora to use for training (space-separated if more than one)")
+				description = "Corpora to use for training (space-separated if more than one)",
+		defaultValue = "SHARP")
 		public List<CorpusXMI.Corpus> getTrainCorpus();
 
 		@Option(
 				longName = "test-corpus",
-				description = "Corpus to use for testing")
+				description = "Corpus to use for testing",
+		defaultValue ="SHARP")
 		public CorpusXMI.Corpus getTestCorpus();
 	}
 
