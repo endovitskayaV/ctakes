@@ -171,12 +171,13 @@ final public class MrconsoParser {
                   = umlsTermUtil.getFormattedTexts( strippedText, extractAbbreviations, minCharLength,
                   maxCharLength, maxWordCount, maxSymCount );
             if ( formattedTexts != null && !formattedTexts.isEmpty() ) {
-               textCount += concept.addTexts( formattedTexts );
+
                // Add secondary codes
                final String source = getToken( tokens, SOURCE );
                final String code = getToken( tokens, SOURCE_CODE );
                if ( wantedTargets.contains( source ) && !code.equals( "NOCODE" ) ) {
                   concept.addCode( source, code );
+                  textCount += concept.addTexts( formattedTexts );
                }
             }
             tokens = FileUtil.readBsvTokens( reader, mrconsoPath );

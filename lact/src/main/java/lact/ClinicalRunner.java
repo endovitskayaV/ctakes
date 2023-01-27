@@ -27,8 +27,9 @@ final public class ClinicalRunner {
         final PipelineBuilder builder = reader.getBuilder();
         builder.set(ConfigParameterConstants.PARAM_INPUTDIR, options.getInputDirectory());
         builder.set(ConfigParameterConstants.PARAM_OUTPUTDIR, options.getXmiOutDirectory());
+        builder.set(ConfigParameterConstants.PARAM_LOOKUP_XML, options.getLookupXml());
         reader.setCliOptionals(options);
-        reader.loadPipelineFile("pipers/Full.piper");
+        reader.loadPipelineFile(options.getPiperPath());
         builder.readFiles(options.getInputDirectory());
         builder.writeXMIs(options.getXmiOutDirectory());
         builder.run();
