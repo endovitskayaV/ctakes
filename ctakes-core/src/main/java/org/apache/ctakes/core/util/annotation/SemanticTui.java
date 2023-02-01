@@ -83,7 +83,7 @@ public enum SemanticTui {
    T093( 93, "Health Care Related Organization", ENTITY ),
    T058( 58, "Health Care Activity", PROCEDURE ),
    T131( 131, "Hazardous or Poisonous Substance", DRUG ),
-   T125( 125, "Hormone", DRUG ),
+   T125( 125, "Hormone", HORMONE ),
    T016( 16, "Human", SUBJECT ),
    T078( 78, "Idea or Concept", FINDING ),
    T129( 129, "Immunologic Factor", IMMUNE_FACTOR ),
