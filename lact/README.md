@@ -22,3 +22,4 @@ Execute from project root: `mvn clean package -DskipTests=true`
 - _sno_rx_16ab_:  SnowMed, RxNorm; default types _[default]_
 - _base_lonic_:  SnowMed, RxNorm, LONIC; all types
 - _all_types_:  SnowMed, RxNorm; all types
+- _all_types_v1_: SnowMed, RxNorm; all types, fixed bug with incorrect labeling from unwanted dicts
