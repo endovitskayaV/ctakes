@@ -88,7 +88,7 @@ public enum SemanticTui {
    T078( 78, "Idea or Concept", FINDING ),
    T129( 129, "Immunologic Factor", IMMUNE_FACTOR ),
    T055( 55, "Individual Behavior", FINDING ),
-   T197( 197, "Inorganic Chemical", DRUG ),
+   T197( 197, "Inorganic Chemical", INORGANIC_CHEMICAL ),
    T037( 37, "Injury or Poisoning", DISORDER ),
    T170( 170, "Intellectual Product", FINDING ),
    // double-check

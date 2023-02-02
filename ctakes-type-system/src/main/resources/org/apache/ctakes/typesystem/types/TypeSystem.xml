@@ -2608,5 +2608,11 @@ More qualifying information on how the procedure was done.</description>
          <features>
          </features>
       </typeDescription>
+      <typeDescription>
+         <name>org.apache.ctakes.typesystem.type.textsem.InorganicChemicalMention</name>
+         <supertypeName>org.apache.ctakes.typesystem.type.textsem.EventMention</supertypeName>
+         <features>
+         </features>
+      </typeDescription>
   </types>
 </typeSystemDescription>
