@@ -63,7 +63,7 @@ public enum SemanticTui {
    T050( 50, "Experimental Model of Disease", DISORDER ),
    T018( 18, "Embryonic Structure", ANATOMY ),
    T071( 71, "Entity", ENTITY ),
-   T126( 126, "Enzyme", DRUG ),
+   T126( 126, "Enzyme", ENZYME ),
    T051( 51, "Event", EVENT ),
    T099( 99, "Family Group", SUBJECT ),
    T021( 21, "Fully Formed Anatomical Structure", ANATOMY ),
