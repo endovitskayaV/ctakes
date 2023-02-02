@@ -26,6 +26,7 @@ public enum SemanticGroup {
    BODY_SUBSTANCE(NE_TYPE_ID_BODY_SUBSTANCE, "Body Substance", "Body Substance", BodySubstanceMention.class, BodySubstanceMention::new ),
    HORMONE(NE_TYPE_ID_HORMONE, "Hormone", "Hormone", HormoneMention.class, HormoneMention::new ),
    INORGANIC_CHEMICAL(NE_TYPE_ID_INORGANIC_CHEMICAL, "Inorganic Chemical", "Inorganic Chemical", InorganicChemicalMention.class, InorganicChemicalMention::new ),
+   ORGANIC_CHEMICAL(NE_TYPE_ID_ORGANIC_CHEMICAL, "Organic Chemical", "Organic Chemical", OrganicChemicalMention.class, OrganicChemicalMention::new ),
    DISORDER( NE_TYPE_ID_DISORDER, "Disorder", "Disease/Disorder", DiseaseDisorderMention.class, DiseaseDisorderMention::new ),
    FINDING( NE_TYPE_ID_FINDING, "Finding", "Sign/Symptom", SignSymptomMention.class, SignSymptomMention::new ),
    PROCEDURE( NE_TYPE_ID_PROCEDURE, "Procedure", "Procedure", ProcedureMention.class, ProcedureMention::new ),

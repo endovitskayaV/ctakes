@@ -115,7 +115,7 @@ public enum SemanticTui {
    T057( 57, "Occupational Activity", EVENT ),
    T090( 90, "Occupation or Discipline", SUBJECT ),
    T115( 115, "Organophosphorous Compound", DRUG ),
-   T109( 109, "Organic Chemical", DRUG ),
+   T109( 109, "Organic Chemical", ORGANIC_CHEMICAL ),
    T032( 32, "Organism Attribute", SUBJECT ),
    T040( 40, "Organism Function", FINDING ),
    T001( 1, "Organism", ENTITY ),

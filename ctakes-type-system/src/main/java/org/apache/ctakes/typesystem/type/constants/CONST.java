@@ -54,6 +54,7 @@ public class CONST {
    static public final int NE_TYPE_ID_BODY_SUBSTANCE = 1017;
    static public final int NE_TYPE_ID_HORMONE = 1018;
    static public final int NE_TYPE_ID_INORGANIC_CHEMICAL = 1019;
+   static public final int NE_TYPE_ID_ORGANIC_CHEMICAL = 1020;
 
 	public static final int MODIFIER_TYPE_ID_UNKNOWN = 0;
 	public static final int MODIFIER_TYPE_ID_COURSE_CLASS = 1;
